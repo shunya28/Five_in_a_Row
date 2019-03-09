@@ -4,7 +4,7 @@ class Omok_gui:
     """Sets omok gui using tkinter and contains board status"""
     window_title = "Omok"
     window_width = 500
-    turn_text = ["Black's turn", "White's turn", "Black wins!", "White wins!"]
+    turn_text = ["Black's turn", "White's turn", "White wins!", "Black wins!"]
     res_path = "../res/"
     img_name = ["black", "white", "empty"]
     img_extension = ".gif"
@@ -15,7 +15,7 @@ class Omok_gui:
         self.window = Tk()
         self.window.title(Omok_gui.window_title)
         self.window.geometry(str(Omok_gui.window_width) + "x" + str(Omok_gui.window_width+20) + "+100+100")
-        self.window.resizable(False, False)
+        self.window.resizable(True, True)
 
         self.label_frame = Frame(self.window, bd=0)
         self.label_frame.pack(side="top", fill="x")
@@ -44,7 +44,7 @@ class Omok_gui:
                 self.board[i][j].bind("<Button-1>", self.onclick)
                 self.board[i][j].grid(row=i, column=j)
 
-        #window.mainloop()
+        self.window.mainloop()
 
     def onclick(self, event):
         event.widget["text"] = str(self.turn)
@@ -64,5 +64,11 @@ class Omok_gui:
                 self.board[i][j]["text"] = "2"
                 self.board[i][j]["image"] = self.img[2]
                 self.board[i][j].bind("<Button-1>", self.onclick)
+
+    def gameover(self):
+        for i in (range(self.board_size)):
+            for j in (range(self.board_size)):
+                self.board[i][j].bind("<Button-1>", self.disable)
+        self.turn_label["text"] = Omok_gui.turn_text[self.turn + 2]
 
 omok = Omok_gui()
