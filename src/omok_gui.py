@@ -1,7 +1,7 @@
 from tkinter import *
 
 class Omok_gui:
-    """Sets omok gui using tkinter and contains board status"""
+    """Omok GUI created with tkinter"""
     window_title = "Omok"
     window_width = 500
     turn_text = ["Black's turn", "White's turn", "White wins!", "Black wins!"]
