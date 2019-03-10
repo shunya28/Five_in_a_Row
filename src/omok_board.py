@@ -61,8 +61,10 @@ class Omok_board():
             for j in range(len(self.omok_board[0])):
                 self.omok_board[i][j] = -1
         self.turn = 0
+        print("Omok board has been reset")
 
     def printboard(self):
+        print()
         for i in range (len(self.omok_board)):
             for j in range(len(self.omok_board[0])):
                 if self.omok_board[i][j] == -1:
@@ -70,3 +72,4 @@ class Omok_board():
                 else:
                     print(self.omok_board[i][j], end='')
             print()
+        print()
