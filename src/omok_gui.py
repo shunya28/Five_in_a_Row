@@ -68,16 +68,12 @@ class Omok_gui:
         if flag == 1:
             self.turnlabel["text"] = Omok_gui.turntext[self.board.turn]
             self.board_gui[i][j]["image"] = self.img[1 - self.board.turn]
-            self.board_gui[i][j].bind("<Button-1>", self.disable)
         elif flag == 2 or flag == 3:
             self.turnlabel["text"] = Omok_gui.turntext[flag]
             self.board_gui[i][j]["image"] = self.img[3 - self.board.turn]
         elif flag == 4:
             self.turnlabel["text"] = Omok_gui.turntext[flag]
             self.board_gui[i][j]["image"] = self.img[5 - self.board.turn]
-
-    def disable(self, event):
-        pass
 
     def reset(self, flag=1):
         if flag:
