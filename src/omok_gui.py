@@ -1,74 +1,90 @@
 from tkinter import *
+from omok_board import *
+
+class OLabel(Label):
+    """Tkinter Label that contains location (i, j) info"""
+    def __init__(self, master, i, j, *args, **kwargs):
+        Label.__init__(self, master, *args, **kwargs)
+        self.i = i
+        self.j = j
 
 class Omok_gui:
     """Omok GUI created with tkinter"""
-    window_title = "Omok"
-    window_width = 500
-    turn_text = ["Black's turn", "White's turn", "White wins!", "Black wins!"]
+    turntext = ["Black's turn", "White's turn", "White wins!", "Black wins!", "Draw!"]
     res_path = "../res/"
     img_name = ["black", "white", "empty"]
     img_extension = ".gif"
 
-    def __init__(self):
-        self.turn = 0
+    def __init__(self, windowtitle, board):
+        self.board = board
 
         self.window = Tk()
-        self.window.title(Omok_gui.window_title)
-        self.window.geometry(str(Omok_gui.window_width) + "x" + str(Omok_gui.window_width+20) + "+100+100")
-        self.window.resizable(True, True)
-
-        self.label_frame = Frame(self.window, bd=0)
-        self.label_frame.pack(side="top", fill="x")
-
-        self.game_frame = Frame(self.window, bd=0)
-        self.game_frame.pack(expand=True, fill="both")
-
-        self.reset_button = Button(self.label_frame, text="Reset", command=self.reset)
-        self.reset_button.pack(side="left", fill="y")
-
-        self.turn_label = Label(self.label_frame, text=Omok_gui.turn_text[self.turn], height=1, width=10)
-        self.turn_label.pack(side="right", fill="y")
+        self.window.title(windowtitle)
 
         self.img = []
 
         for i in range(len(Omok_gui.img_name)):
             self.img.append(PhotoImage(file=Omok_gui.res_path + Omok_gui.img_name[i] + Omok_gui.img_extension))
 
-        self.board = []
-        self.board_size = int(Omok_gui.window_width/self.img[0].width())
+        self.windowheight = len(self.board.omok_board) * self.img[0].height()
+        self.windowwidth = len(self.board.omok_board[0]) * self.img[0].width()
 
-        for i in (range(self.board_size)):
-            self.board.append([])
-            for j in (range(self.board_size)):
-                self.board[i].append(Label(self.game_frame, text = "2", image=self.img[2], height=self.img[0].height(), width=self.img[0].width(), bd=0, padx=0, pady=0))
-                self.board[i][j].bind("<Button-1>", self.onclick)
-                self.board[i][j].grid(row=i, column=j)
+        self.window.geometry(str(self.windowwidth) + "x" + str(self.windowheight+20) + "+100+100")
+        self.window.resizable(True, True)
+
+        self.labelframe = Frame(self.window, height=20, bd=0)
+        self.labelframe.pack(side="top", fill="x")
+
+        self.gameframe = Frame(self.window, bd=0)
+        self.gameframe.pack(expand=True, fill="both")
+
+        self.resetbutton = Button(self.labelframe, text="Reset", command=self.reset)
+        self.resetbutton.pack(side="left", fill="y")
+
+        self.turnlabel = Label(self.labelframe, text=Omok_gui.turntext[board.turn], height=1, width=10)
+        self.turnlabel.pack(side="right", fill="y")
+
+        self.board_gui = []
+
+        for i in (range(len(self.board.omok_board))):
+            self.board_gui.append([])
+            for j in (range(len(self.board.omok_board[0]))):
+                self.board_gui[i].append(OLabel(self.gameframe, i=i, j=j, bd=0, padx=0, pady=0, image=self.img[self.board.omok_board[i][j]], height=self.img[0].height(), width=self.img[0].width()))
+                self.board_gui[i][j].bind("<Button-1>", self.onclick)
+                self.board_gui[i][j].grid(row=i, column=j)
 
         self.window.mainloop()
 
     def onclick(self, event):
-        event.widget["text"] = str(self.turn)
-        event.widget["image"] = self.img[self.turn]
-        event.widget.bind("<Button-1>", self.disable)
-        self.turn = 1 - self.turn
-        self.turn_label["text"] = Omok_gui.turn_text[self.turn]
+        self.play(event.widget.i, event.widget.j)
+
+    def play(self, i, j, flag=None):
+        if flag == None:
+            flag = self.board.play(i, j)
+
+        if flag == 0 or flag == -1:
+            return
+
+        if flag == 1:
+            self.turnlabel["text"] = Omok_gui.turntext[self.board.turn]
+            self.board_gui[i][j]["image"] = self.img[1 - self.board.turn]
+            self.board_gui[i][j].bind("<Button-1>", self.disable)
+        elif flag == 2 or flag == 3:
+            self.turnlabel["text"] = Omok_gui.turntext[flag]
+            self.board_gui[i][j]["image"] = self.img[3 - self.board.turn]
+        elif flag == 4:
+            self.turnlabel["text"] = Omok_gui.turntext[flag]
+            self.board_gui[i][j]["image"] = self.img[5 - self.board.turn]
 
     def disable(self, event):
         pass
 
-    def reset(self):
-        self.turn = 0
-        self.turn_label["text"] = Omok_gui.turn_text[self.turn]
-        for i in (range(self.board_size)):
-            for j in (range(self.board_size)):
-                self.board[i][j]["text"] = "2"
-                self.board[i][j]["image"] = self.img[2]
-                self.board[i][j].bind("<Button-1>", self.onclick)
+    def reset(self, flag=1):
+        if flag:
+            self.board.resetboard()
+        self.turnlabel["text"] = Omok_gui.turntext[self.board.turn]
 
-    def gameover(self):
-        for i in (range(self.board_size)):
-            for j in (range(self.board_size)):
-                self.board[i][j].bind("<Button-1>", self.disable)
-        self.turn_label["text"] = Omok_gui.turn_text[self.turn + 2]
-
-omok = Omok_gui()
+        for i in (range(len(self.board.omok_board))):
+            for j in (range(len(self.board.omok_board[0]))):
+                self.board_gui[i][j]["image"] = self.img[self.board.omok_board[i][j]]
+                self.board_gui[i][j].bind("<Button-1>", self.onclick)

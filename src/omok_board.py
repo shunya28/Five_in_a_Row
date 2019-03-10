@@ -1,21 +1,28 @@
 from omok_checker import Omok_checker as checker
+from omok_gui import *
 
 class Omok_board():
     """Omok game board"""
-    def __init__(self, board_height, board_width):
-        if board_height < 5 or board_width < 5:
+    def __init__(self, height, width):
+        if height < 5 or width < 5:
             raise ValueError("Board size must be greater than 5x5")
 
-        self.turn = 0 # 0 = black's turn // 1 = white's turn // 2 = white wins // 3 = black wins // 4 = draw
+        self.turn = 0
+        # 0 = black's turn // 1 = white's turn // 2 = white wins // 3 = black wins // 4 = draw
 
-        self.omok_board = [] # -1 = empty // 0 = black // 1 = white
+        self.omok_board = []
+        # -1 = empty // 0 = black // 1 = white
 
-        for i in range(board_height):
+        for i in range(height):
             self.omok_board.append([])
-            for j in range(board_width):
+            for j in range(width):
                 self.omok_board[i].append(-1)
 
-    def play(self, i, j): # returns 0 for ineffective play, -1 for significant error, 1 for normal play, 2 for white's win, 3 for black's win, and 4 for draw
+        self.gui = None
+
+    def play(self, i, j):
+        # returns 0 for ineffective play, -1 for significant error, 1 for normal play,
+        # 2 for white's win, 3 for black's win, 4 for draw by white, 5 for draw by black
         if self.turn == 2:
             print("Game over: white wins!")
             return 0
@@ -40,21 +47,25 @@ class Omok_board():
         else:
             self.omok_board[i][j] = self.turn
             self.turn = 1 - self.turn
+            print("Placed on (%d, %d)" % (i, j))
 
         if checker.checkdefeat(self.omok_board, i, j):
             self.turn += 2
             if self.turn == 2:
                 print("Game over: white wins!")
-                return 2
+                flag = 2
             elif self.turn == 3:
                 print("Game over: black wins!")
-                return 3
+                flag = 3
         elif checker.checkdraw(self.omok_board):
-            self.turn = 4
+            self.turn += 4
             print("Game over: draw!")
-            return 4
+            flag = 4
         else:
-            return 1
+            flag = 1
+
+        self.__update_gui(1, i, j, flag)
+        return flag
 
     def resetboard(self):
         for i in range (len(self.omok_board)):
@@ -62,6 +73,7 @@ class Omok_board():
                 self.omok_board[i][j] = -1
         self.turn = 0
         print("Omok board has been reset")
+        self.__update_gui(0)
 
     def printboard(self):
         print()
@@ -73,3 +85,14 @@ class Omok_board():
                     print(self.omok_board[i][j], end='')
             print()
         print()
+
+    def load_gui(self, gui):
+        self.gui = gui
+
+    def __update_gui(self, action, i=None, j=None, flag=None):
+        if self.gui == None:
+            return
+        if action == 0:
+            self.gui.reset(0)
+        elif action == 1:
+            self.gui.play(i, j, flag)
