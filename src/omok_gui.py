@@ -53,6 +53,8 @@ class Omok_gui:
                 self.board_gui[i][j].bind("<Button-1>", self.onclick)
                 self.board_gui[i][j].grid(row=i, column=j)
 
+        self.board.load_gui(self)
+
         self.window.mainloop()
 
     def onclick(self, event):

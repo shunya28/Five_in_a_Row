@@ -104,6 +104,7 @@ class Omok_board():
 
     def load_gui(self, gui):
         self.gui = gui
+        print("GUI successfully loaded to game engine")
 
     def __update_gui(self, action, i=None, j=None, flag=None):
         if self.gui == None:
