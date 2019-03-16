@@ -8,7 +8,8 @@ class Omok_board():
             raise ValueError("Board size must be greater than 5x5")
 
         self.status = 0
-        # 0 = black's turn // 1 = white's turn // 2 = white wins // 3 = black wins // 4 = draw
+        # 0 = black's turn // 1 = white's turn // 2 = white wins // 3 = black wins
+        # 4 = draw by white // 5 = draw by black // 6 = tracing
 
         self.omok_board = []
         # -1 = empty // 0 = black // 1 = white
@@ -24,31 +25,32 @@ class Omok_board():
         self.gui = None
 
     def play(self, i, j):
-        # returns 0 for ineffective play, -1 for significant error, 1 for normal play,
-        # 2 for white's win, 3 for black's win, 4 for draw by white, 5 for draw by black
+        # return value -1 = ineffective play or significant error // 0 = normal play
+        # 2 = white's win // 3 = black's win // 4 = draw by white
         if self.status == 2:
             print("Game over: white wins!")
-            return 0
+            return -1
         elif self.status == 3:
             print("Game over: black wins!")
-            return 0
+            return -1
         elif self.status == 4:
             print("Game over: draw!")
-            return 0
+            return -1
         elif self.status != 0 and self.status != 1:
             print("Error: status attribute has been inappropriately modified; current status value is %d" % self.status)
             return -1
         elif i < 0 or j < 0 or i >= len(self.omok_board) or j >= len(self.omok_board[0]):
             print("Cannot place piece outside the board range: (%d, %d)" % (i, j))
-            return 0
+            return -1
         elif self.omok_board[i][j] != -1:
             print("Cannot place piece on a non-empty spot: (%d, %d) already placed with %d" % (i, j, self.omok_board[i][j]))
-            return 0
+            return -1
         elif checker.checkthree(self.omok_board, i, j):
             print("Cannot place piece on a spot that creates three by three placement")
-            return 0
+            return -1
         else:
             self.omok_board[i][j] = self.status
+            self.trace.append((self.status, i, j))
             self.status = 1 - self.status
             print("Placed on (%d, %d)" % (i, j))
 
@@ -65,7 +67,7 @@ class Omok_board():
             print("Game over: draw!")
             flag = 4
         else:
-            flag = 1
+            flag = 0
 
         self.__update_gui(1, i, j, flag)
         return flag
@@ -88,6 +90,17 @@ class Omok_board():
                     print(self.omok_board[i][j], end='')
             print()
         print()
+
+    def printtrace(self):
+        for i in range(len(self.trace)):
+            if self.trace[i][0] == 0:
+                word = "black"
+            elif self.trace[i][0] == 1:
+                word = "white"
+            else:
+                print("Error in trace: non-identifiable value stored in attribute trace")
+                return
+            print("%d: (%d, %d) by " % ((i + 1), self.trace[i][1], self.trace[i][2]) + word)
 
     def load_gui(self, gui):
         self.gui = gui

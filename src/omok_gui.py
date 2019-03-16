@@ -62,10 +62,10 @@ class Omok_gui:
         if flag == None:
             flag = self.board.play(i, j)
 
-        if flag == 0 or flag == -1:
+        if flag == -1:
             return
 
-        if flag == 1:
+        if flag == 0:
             self.statuslabel["text"] = Omok_gui.statustext[self.board.status]
             self.board_gui[i][j]["image"] = self.img[1 - self.board.status]
         elif flag == 2 or flag == 3:
