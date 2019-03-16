@@ -10,7 +10,7 @@ class OLabel(Label):
 
 class Omok_gui:
     """Omok GUI created with tkinter"""
-    turntext = ["Black's turn", "White's turn", "White wins!", "Black wins!", "Draw!"]
+    statustext = ["Black's turn", "White's turn", "White wins!", "Black wins!", "Draw!"]
     res_path = "../res/"
     img_name = ["black", "white", "empty"]
     img_extension = ".gif"
@@ -41,8 +41,8 @@ class Omok_gui:
         self.resetbutton = Button(self.labelframe, text="Reset", command=self.reset)
         self.resetbutton.pack(side="left", fill="y")
 
-        self.turnlabel = Label(self.labelframe, text=Omok_gui.turntext[board.turn], height=1, width=10)
-        self.turnlabel.pack(side="right", fill="y")
+        self.statuslabel = Label(self.labelframe, text=Omok_gui.statustext[board.status], height=1, width=10)
+        self.statuslabel.pack(side="right", fill="y")
 
         self.board_gui = []
 
@@ -66,19 +66,19 @@ class Omok_gui:
             return
 
         if flag == 1:
-            self.turnlabel["text"] = Omok_gui.turntext[self.board.turn]
-            self.board_gui[i][j]["image"] = self.img[1 - self.board.turn]
+            self.statuslabel["text"] = Omok_gui.statustext[self.board.status]
+            self.board_gui[i][j]["image"] = self.img[1 - self.board.status]
         elif flag == 2 or flag == 3:
-            self.turnlabel["text"] = Omok_gui.turntext[flag]
-            self.board_gui[i][j]["image"] = self.img[3 - self.board.turn]
+            self.statuslabel["text"] = Omok_gui.statustext[flag]
+            self.board_gui[i][j]["image"] = self.img[3 - self.board.status]
         elif flag == 4:
-            self.turnlabel["text"] = Omok_gui.turntext[flag]
-            self.board_gui[i][j]["image"] = self.img[5 - self.board.turn]
+            self.statuslabel["text"] = Omok_gui.statustext[flag]
+            self.board_gui[i][j]["image"] = self.img[5 - self.board.status]
 
     def reset(self, flag=1):
         if flag:
             self.board.resetboard()
-        self.turnlabel["text"] = Omok_gui.turntext[self.board.turn]
+        self.statuslabel["text"] = Omok_gui.statustext[self.board.status]
 
         for i in (range(len(self.board.omok_board))):
             for j in (range(len(self.board.omok_board[0]))):
