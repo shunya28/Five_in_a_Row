@@ -42,3 +42,11 @@ class Omok_checker:
     def checkthree(board, i, j):
         # TODO: implement checker method for violation of the three and three rule
         return False
+
+    @staticmethod
+    def isempty(board):
+        for i in for i in range (len(board)):
+            for j in range(len(board[0])):
+                if board[i][j] != -1:
+                    return False
+        return True
