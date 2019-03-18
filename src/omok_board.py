@@ -2,10 +2,14 @@ from omok_checker import Omok_checker as checker
 from omok_gui import *
 
 class Omok_board():
-    """Omok game board"""
+    """Omok game board engine"""
     def __init__(self, height, width):
         if height < 5 or width < 5:
             raise ValueError("Board size must be greater than 5x5")
+
+        self.lock = 0
+        # 0 = waiting (unlocked) // 1 = processing (locked)
+        # (for synchronization purposes)
 
         self.status = 0
         # 0 = black's turn // 1 = white's turn // 2 = white wins // 3 = black wins
@@ -25,8 +29,9 @@ class Omok_board():
         self.gui = None
 
     def play(self, i, j):
-        # return value -1 = ineffective play or significant error // 0 = normal play
+        # return value: -1 = ineffective play or significant error // 0 = normal play
         # 2 = white's win // 3 = black's win // 4 = draw by white
+        self.lock = 1
         if self.status == 2:
             print("Game over: white wins!")
             return -1
@@ -70,15 +75,18 @@ class Omok_board():
             flag = 0
 
         self.__update_gui(1, i, j, flag)
+        self.lock = 0
         return flag
 
-    def resetboard(self):
+    def reset(self):
+        self.lock = 1
         for i in range (len(self.omok_board)):
             for j in range(len(self.omok_board[0])):
                 self.omok_board[i][j] = -1
         self.status = 0
         print("Omok board has been reset")
         self.__update_gui(0)
+        self.lock = 0
 
     def printboard(self):
         print()
@@ -110,6 +118,6 @@ class Omok_board():
         if self.gui == None:
             return
         if action == 0:
-            self.gui.reset(0)
+            self.gui.clear()
         elif action == 1:
-            self.gui.play(i, j, flag)
+            self.gui.place(i, j, flag)

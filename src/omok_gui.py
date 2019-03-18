@@ -38,7 +38,7 @@ class Omok_gui:
         self.gameframe = Frame(self.window, bd=0)
         self.gameframe.pack(expand=True, fill="both")
 
-        self.resetbutton = Button(self.labelframe, text="Reset", command=self.reset)
+        self.resetbutton = Button(self.labelframe, text="Reset", command=self.onclick2)
         self.resetbutton.pack(side="left", fill="y")
 
         self.statuslabel = Label(self.labelframe, text=Omok_gui.statustext[board.status], height=1, width=10)
@@ -50,23 +50,20 @@ class Omok_gui:
             self.board_gui.append([])
             for j in (range(len(self.board.omok_board[0]))):
                 self.board_gui[i].append(OLabel(self.gameframe, i=i, j=j, bd=0, padx=0, pady=0, image=self.img[self.board.omok_board[i][j]], height=self.img[0].height(), width=self.img[0].width()))
-                self.board_gui[i][j].bind("<Button-1>", self.onclick)
+                self.board_gui[i][j].bind("<Button-1>", self.onclick1)
                 self.board_gui[i][j].grid(row=i, column=j)
 
         self.board.load_gui(self)
 
         self.window.mainloop()
 
-    def onclick(self, event):
-        self.play(event.widget.i, event.widget.j)
+    def onclick1(self, event):
+        self.board.play(event.widget.i, event.widget.j)
 
-    def play(self, i, j, flag=None):
-        if flag == None:
-            flag = self.board.play(i, j)
+    def onclick2(self):
+        self.board.reset()
 
-        if flag == -1:
-            return
-
+    def place(self, i, j, flag):
         if flag == 0:
             self.statuslabel["text"] = Omok_gui.statustext[self.board.status]
             self.board_gui[i][j]["image"] = self.img[1 - self.board.status]
@@ -77,12 +74,8 @@ class Omok_gui:
             self.statuslabel["text"] = Omok_gui.statustext[flag]
             self.board_gui[i][j]["image"] = self.img[5 - self.board.status]
 
-    def reset(self, flag=1):
-        if flag:
-            self.board.resetboard()
+    def clear(self):
         self.statuslabel["text"] = Omok_gui.statustext[self.board.status]
-
         for i in (range(len(self.board.omok_board))):
             for j in (range(len(self.board.omok_board[0]))):
                 self.board_gui[i][j]["image"] = self.img[self.board.omok_board[i][j]]
-                self.board_gui[i][j].bind("<Button-1>", self.onclick)
