@@ -58,8 +58,8 @@ class Omok_board():
         else:
             self.omok_board[i][j] = self.status
             self.trace.append((self.status, i, j))
+            print("Placed on (%d, %d) by %s" % (i, j, ("white", "black")[self.status == 0]))
             self.status = 1 - self.status
-            print("Placed on (%d, %d)" % (i, j))
 
         if checker.checkdefeat(self.omok_board, i, j):
             self.status += 2
@@ -103,14 +103,7 @@ class Omok_board():
 
     def printtrace(self):
         for i in range(len(self.trace)):
-            if self.trace[i][0] == 0:
-                word = "black"
-            elif self.trace[i][0] == 1:
-                word = "white"
-            else:
-                print("Error in trace: non-identifiable value stored in attribute trace")
-                return
-            print("%d: (%d, %d) by " % ((i + 1), self.trace[i][1], self.trace[i][2]) + word)
+            print("%d: (%d, %d) by %s" % ((i + 1), self.trace[i][1], self.trace[i][2], ("white", "black")[self.trace[i][0] == 0]))
 
     def load_gui(self, gui):
         self.gui = gui
