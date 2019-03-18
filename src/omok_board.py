@@ -28,6 +28,8 @@ class Omok_board():
 
         self.gui = None
 
+        print("Omok engine loaded")
+
     def play(self, i, j):
         # return value: -1 = ineffective play or significant error // 0 = normal play
         # 2 = white's win // 3 = black's win // 4 = draw by white
