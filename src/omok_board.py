@@ -3,7 +3,7 @@ from omok_gui import *
 
 class Omok_board():
     """Omok game board engine"""
-    def __init__(self, height, width):
+    def __init__(self, height, width, silent=False):
         if height < 5 or width < 5:
             raise ValueError("Board size must be greater than 5x5")
 
@@ -21,7 +21,7 @@ class Omok_board():
         self.trace = []
         # trace of all movements made by players
 
-        self.silent = False
+        self.silent = silent
         # set to True in order to block all stdout messages
 
         for i in range(height):
@@ -126,8 +126,8 @@ class Omok_board():
             self.gui.place(i, j, flag)
 
     def duplicate(self):
-        """Returns a new board instance with same board status, without GUI"""
-        newboard = Omok_board(len(self.omok_board), len(self.omok_board[0]))
+        """Returns a new silent board instance with same board status, without GUI"""
+        newboard = Omok_board(len(self.omok_board), len(self.omok_board[0]), silent=True)
         newboard.status = self.status
 
         for i in range(len(self.omok_board)):
