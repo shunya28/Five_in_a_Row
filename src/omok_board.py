@@ -21,6 +21,9 @@ class Omok_board():
         self.trace = []
         # trace of all movements made by players
 
+        self.silent = False
+        # set to True in order to block all stdout messages
+
         for i in range(height):
             self.omok_board.append([])
             for j in range(width):
@@ -28,50 +31,50 @@ class Omok_board():
 
         self.gui = None
 
-        print("Omok engine loaded")
+        self.print("Omok engine loaded")
 
     def play(self, i, j):
         # return value: -1 = ineffective play or significant error // 0 = normal play
         # 2 = white's win // 3 = black's win // 4 = draw by white
         self.lock = 1
         if self.status == 2:
-            print("Game over: white wins!")
+            self.print("Game over: white wins!")
             return -1
         elif self.status == 3:
-            print("Game over: black wins!")
+            self.print("Game over: black wins!")
             return -1
         elif self.status == 4:
-            print("Game over: draw!")
+            self.print("Game over: draw!")
             return -1
         elif self.status != 0 and self.status != 1:
-            print("Error: status attribute has been inappropriately modified; current status value is %d" % self.status)
+            self.print("Error: status attribute has been inappropriately modified; current status value is %d" % self.status)
             return -1
         elif i < 0 or j < 0 or i >= len(self.omok_board) or j >= len(self.omok_board[0]):
-            print("Cannot place piece outside the board range: (%d, %d)" % (i, j))
+            self.print("Cannot place piece outside the board range: (%d, %d)" % (i, j))
             return -1
         elif self.omok_board[i][j] != -1:
-            print("Cannot place piece on a non-empty spot: (%d, %d) already placed with %d" % (i, j, self.omok_board[i][j]))
+            self.print("Cannot place piece on a non-empty spot: (%d, %d) already placed with %d" % (i, j, self.omok_board[i][j]))
             return -1
         elif checker.checkthree(self.omok_board, i, j):
-            print("Cannot place piece on a spot that creates three by three placement")
+            self.print("Cannot place piece on a spot that creates three by three placement")
             return -1
         else:
             self.omok_board[i][j] = self.status
             self.trace.append((self.status, i, j))
-            print("Placed on (%d, %d) by %s" % (i, j, ("white", "black")[self.status == 0]))
+            self.print("Placed on (%d, %d) by %s" % (i, j, ("white", "black")[self.status == 0]))
             self.status = 1 - self.status
 
         if checker.checkdefeat(self.omok_board, i, j):
             self.status += 2
             if self.status == 2:
-                print("Game over: white wins!")
+                self.print("Game over: white wins!")
                 flag = 2
             elif self.status == 3:
-                print("Game over: black wins!")
+                self.print("Game over: black wins!")
                 flag = 3
         elif checker.checkdraw(self.omok_board):
             self.status += 4
-            print("Game over: draw!")
+            self.print("Game over: draw!")
             flag = 4
         else:
             flag = 0
@@ -86,9 +89,14 @@ class Omok_board():
             for j in range(len(self.omok_board[0])):
                 self.omok_board[i][j] = -1
         self.status = 0
-        print("Omok board has been reset")
+        self.print("Omok board has been reset")
         self.__update_gui(0)
         self.lock = 0
+
+    def print(self, message):
+        if self.silent:
+            return
+        print(message)
 
     def printboard(self):
         print()
@@ -107,7 +115,7 @@ class Omok_board():
 
     def load_gui(self, gui):
         self.gui = gui
-        print("GUI successfully loaded to game engine")
+        self.print("GUI successfully loaded to game engine")
 
     def __update_gui(self, action, i=None, j=None, flag=None):
         if self.gui == None:
