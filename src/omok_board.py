@@ -116,3 +116,17 @@ class Omok_board():
             self.gui.clear()
         elif action == 1:
             self.gui.place(i, j, flag)
+
+    def duplicate(self):
+        """Returns a new board instance with same board status, without GUI"""
+        newboard = Omok_board(len(self.omok_board), len(self.omok_board[0]))
+        newboard.status = self.status
+
+        for i in range(len(self.omok_board)):
+            for j in range(len(self.omok_board[0])):
+                newboard.omok_board[i][j] = self.omok_board[i][j]
+
+        for i in range(len(self.trace)):
+            newboard.trace.append(self.trace[i])
+
+        return newboard
