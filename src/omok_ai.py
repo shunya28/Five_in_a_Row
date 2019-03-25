@@ -5,6 +5,9 @@ from omok_board import Omok_board
 
 class Omok_ai:
     """Omok AI based on alpha-beta pruning algorithm"""
+    # TODO: fix errors, implement machine learning to improve AI
+    cnt = 0
+    evaltime = 0
     def __init__(self, board, color):
         if type(board) is not Omok_board or (color != 0 and color != 1):
             raise ValueError("Class constructor must receive valid arguments")
@@ -51,23 +54,22 @@ class Omok_ai:
     def calculate(board):
         depth = 2
         area = 3
-        print("....AI calculating.... depth = %d, area = %d" % (depth, area))
         decision = Omok_ai.alphabeta(board, depth, area, -math.inf, math.inf, (True, False)[board.status == 0])[1]
         i = decision.trace[-1][1]
         j = decision.trace[-1][2]
+        print("took " + str(Omok_ai.cnt) + " evaluations")
+        print("each eval takes average of " + str(Omok_ai.evaltime / Omok_ai.cnt) + " seconds")
+        Omok_ai.cnt = 0
         return (i, j)
 
     @staticmethod
     def alphabeta(node, depth, area, a, b, maximizing):
-        print("........simulating at depth " + str(depth))
         if depth == 0 or node.status == 2 or node.status == 3 or node.status == 4 or node.status == 5:
-            print("................reached the terminal node")
             return (Omok_ai.evaluateboard(node), None)
         goodchild = None
         if maximizing:
             for child in Omok_ai.nextmoveiterator(node, area):
                 childvalue = Omok_ai.alphabeta(child, depth - 1, area, a, b, False)[0]
-                print("............returned to depth " + str(depth) + " with childvalue = " + str(childvalue))
                 if a < childvalue:
                     goodchild = child
                     a = childvalue
@@ -77,7 +79,6 @@ class Omok_ai:
         else:
             for child in Omok_ai.nextmoveiterator(node, area):
                 childvalue = Omok_ai.alphabeta(child, depth - 1, area, a, b, True)[0]
-                print("............returned to depth " + str(depth) + " with childvalue = " + str(childvalue))
                 if b > childvalue:
                     goodchild = child
                     b = childvalue
@@ -85,52 +86,30 @@ class Omok_ai:
                     break
             return (b, goodchild)
 
-
-
     @staticmethod
     def nextmoveiterator(board, area):
         """Iterates every possible next move in given area"""
-        irange = [len(board.omok_board), -1] # [irange min, irange max]
-        jrange = [len(board.omok_board[0]), -1] # [jrange min, jrange max]
+        possibilities = set({})
         check = False
 
         for i in range(len(board.omok_board)):
             for j in range(len(board.omok_board[0])):
                 if board.omok_board[i][j] == 0 or board.omok_board[i][j] == 1:
-                    if i < irange[0]:
-                        irange[0] = i
-                        check = True
-                    if i > irange[1]:
-                        irange[1] = i
-                    if j < jrange[0]:
-                        jrange[0] = j
-                    if j > jrange[1]:
-                        jrange[1] = j
+                    check = True
+                    for k in range(i - area, i + area + 1):
+                        for l in range(j - area, j + area + 1):
+                            if k >= 0 and k < len(board.omok_board):
+                                if l >= 0 and l < len(board.omok_board[0]):
+                                    if board.omok_board[k][l] == -1:
+                                        possibilities.add((k, l))
 
         if not check:
-            irange = [len(board.omok_board) / 2, len(board.omok_board) / 2]
-            jrange = [len(board.omok_board[0]) / 2, len(board.omok_board[0]) / 2]
+            possibilities.add((math.floor(len(board.omok_board) / 2), math.floor(len(board.omok_board[0]) / 2)))
 
-        irange[0] -= area
-        irange[1] += area
-        jrange[0] -= area
-        jrange[1] += area
-
-        if irange[0] < 0:
-            irange[0] = 0
-        if irange[1] >= len(board.omok_board):
-            irange[1] = len(board.omok_board) - 1
-        if jrange[0] < 0:
-            jrange[0] = 0
-        if jrange[1] >= len(board.omok_board[0]):
-            jrange[1] = len(board.omok_board[0]) - 1
-
-        for i in range(irange[0], irange[1] + 1):
-            for j in range(jrange[0], jrange[1] + 1):
-                if board.omok_board[i][j] == -1:
-                    newboard = board.duplicate()
-                    newboard.play(i, j)
-                    yield newboard
+        for position in possibilities:
+            newboard = board.duplicate()
+            newboard.play(position[0], position[1])
+            yield newboard
 
     @staticmethod
     def evaluateboard(board):
@@ -145,13 +124,16 @@ class Omok_ai:
             b. Whether it is achievable both ways
             c. How much blockage is present and how close they are
         """
+        start = time.time()
         boardvalue = 0
 
         for i in range(len(board.omok_board)):
             for j in range(len(board.omok_board[0])):
                 if board.omok_board[i][j] == 0 or board.omok_board[i][j] == 1:
                     boardvalue += Omok_ai.evaluatepoint(board, i, j)
-
+        Omok_ai.cnt += 1
+        end = time.time()
+        Omok_ai.evaltime += end - start
         return boardvalue
 
     @staticmethod
@@ -268,10 +250,12 @@ class Omok_ai:
         elif count[0] == 5:
             return 10000 * weight
         elif count[0] == 4:
-            if count[2] == 2:
+            if dir1count[2] >= 1 and dir2count[2] >= 1:
                 return 10000 * weight
-            elif count[2] == 1:
+            elif count[2] >= 1:
                 return 50 * weight
+            else:
+                return 0
         elif count[0] == 3:
             return 4 * count[1] * count[2] * weight
         elif count[0] == 2:
