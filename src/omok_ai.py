@@ -5,9 +5,10 @@ from omok_board import Omok_board
 
 class Omok_ai:
     """Omok AI based on alpha-beta pruning algorithm"""
-    # TODO: fix errors, implement machine learning to improve AI
+    # TODO: make algorithm faster, implement machine learning to improve AI
     cnt = 0
     evaltime = 0
+
     def __init__(self, board, color):
         if type(board) is not Omok_board or (color != 0 and color != 1):
             raise ValueError("Class constructor must receive valid arguments")
@@ -53,7 +54,7 @@ class Omok_ai:
     @staticmethod
     def calculate(board):
         depth = 2
-        area = 3
+        area = 2
         decision = Omok_ai.alphabeta(board, depth, area, -math.inf, math.inf, (True, False)[board.status == 0])[1]
         i = decision.trace[-1][1]
         j = decision.trace[-1][2]
@@ -125,15 +126,18 @@ class Omok_ai:
             c. How much blockage is present and how close they are
         """
         start = time.time()
+
         boardvalue = 0
 
         for i in range(len(board.omok_board)):
             for j in range(len(board.omok_board[0])):
                 if board.omok_board[i][j] == 0 or board.omok_board[i][j] == 1:
                     boardvalue += Omok_ai.evaluatepoint(board, i, j)
+
         Omok_ai.cnt += 1
         end = time.time()
         Omok_ai.evaltime += end - start
+
         return boardvalue
 
     @staticmethod
@@ -183,15 +187,22 @@ class Omok_ai:
         if dir != 1 and dir != 2 and dir != 3 and dir != 4:
             raise ValueError("Wrong dir value")
 
-        linevalue = 0
         color = board.omok_board[i][j]
         weight = (-1, 1)[color == 1]
 
-        dir1 = (-1, -1)
-        dir2 = (1, 1)
+        if dir == 1:
+            dir = ((-1, -1), (1, 1))
+        elif dir == 2:
+            dir = ((-1, 0), (1, 0))
+        elif dir == 3:
+            dir = ((-1, 1), (1, -1))
+        else:
+            dir = ((0, 1), (0, -1))
 
-        dir1count = [0, 0, 0]
-        dir2count = [0, 0, 0]
+        count = [[0, 0, 0], [0, 0, 0], [1, 1, 0]]
+        # outer list:
+        # [first direction count, opposite direction count, total count]
+        # innter list:
         # [number of identical stones in row in next 4 spaces until blockage,
         #  number of identical stones in next 4 spaces until blockage,
         #  number of empty spots in next 4 spaces until blockage]
@@ -199,66 +210,60 @@ class Omok_ai:
         # 0-01-  --> [1, 1]
         # 010--  --> [0, 0]
 
-        if dir == 2:
-            dir1 = (-1, 0)
-            dir2 = (1, 0)
-        elif dir == 3:
-            dir1 = (-1, 1)
-            dir2 = (1, -1)
-        elif dir == 4:
-            dir1 = (0, 1)
-            dir2 = (0, -1)
-
         inrow = True
 
-        for movement in range(1, 5):
-            if i + dir1[0] * movement < 0 or i + dir1[0] * movement >= len(board.omok_board):
-                break
-            if j + dir1[1] * movement < 0 or j + dir1[1] * movement >= len(board.omok_board[0]):
-                break
-            if board.omok_board[i + dir1[0] * movement][j + dir1[1] * movement] == color:
-                if inrow:
-                    dir1count[0] += 1
+        for dir_index in range(0, 2):
+            for movement in range(1, 5):
+                if i + dir[dir_index][0] * movement < 0 or i + dir[dir_index][0] * movement >= len(board.omok_board):
+                    break
+                if j + dir[dir_index][1] * movement < 0 or j + dir[dir_index][1] * movement >= len(board.omok_board[0]):
+                    break
+                if board.omok_board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == color:
+                    if inrow:
+                        count[dir_index][0] += 1
+                    else:
+                        count[dir_index][1] += 1
+                elif board.omok_board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == -1:
+                    inrow = False
+                    count[dir_index][2] += 1
                 else:
-                    dir1count[1] += 1
-            elif board.omok_board[i + dir1[0] * movement][j + dir1[1] * movement] == -1:
-                inrow = False
-                dir1count[2] += 1
-            else:
-                break
-        for movement in range(1, 5):
-            if i + dir2[0] * movement < 0 or i + dir2[0] * movement >= len(board.omok_board):
-                break
-            if j + dir2[1] * movement < 0 or j + dir2[1] * movement >= len(board.omok_board[0]):
-                break
-            if board.omok_board[i + dir2[0] * movement][j + dir2[1] * movement] == color:
-                if inrow:
-                    dir2count[0] += 1
-                else:
-                    dir2count[1] += 1
-            elif board.omok_board[i + dir2[0] * movement][j + dir2[1] * movement] == -1:
-                inrow = False
-                dir2count[2] += 1
-            else:
-                break
+                    break
 
-        count = (1 + dir1count[0] + dir2count[0], 1 + dir1count[1] + dir2count[1], dir1count[2] + dir2count[2])
+        for count_index in range(0, 3):
+            for dir_index in range(0, 2):
+                count[2][count_index] += count[dir_index][count_index]
 
-        # TODO: implement proper values
-        if count[1] + count[2] < 5:
+        if count[2][0] + count[2][1] + count[2][2] < 5 or count[2][0] > 5:
             return 0
-        elif count[0] == 5:
-            return 10000 * weight
-        elif count[0] == 4:
-            if dir1count[2] >= 1 and dir2count[2] >= 1:
-                return 10000 * weight
-            elif count[2] >= 1:
-                return 50 * weight
+        elif count[2][0] == 5:
+            return 100000000 * weight
+        elif count[2][0] == 4:
+            if count[0][2] >= 1 and count[0][2] >= 1:
+                return 1000000 * weight
+            elif count[2][2] >= 1:
+                return 1000 * weight
             else:
                 return 0
-        elif count[0] == 3:
-            return 4 * count[1] * count[2] * weight
-        elif count[0] == 2:
-            return 2 * count[1] * count[2] * weight
+        elif count[2][0] == 3:
+            if count[0][2] >= 1 and count[0][2] >= 1:
+                return 1000 * weight
+            elif count[2][2] >= 1:
+                return 100 * weight
+            else:
+                return 0
+        elif count[2][0] == 2:
+            if count[0][2] >= 1 and count[0][2] >= 1:
+                return 10 * weight
+            elif count[2][2] >= 1:
+                return 2 * weight
+            else:
+                return 0
+        elif count[2][0] == 1:
+            if count[0][2] >= 1 and count[0][2] >= 1:
+                return 10 * weight
+            elif count[2][2] >= 1:
+                return weight
+            else:
+                return 0
         else:
-            return count[1] * count[2] * weight
+            return 0
