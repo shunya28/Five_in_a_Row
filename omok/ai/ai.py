@@ -1,16 +1,16 @@
 import math
 import time
 from threading import Thread
-from omok_board import Omok_board
+from omok.core.board import Board
 
-class Omok_ai:
+class AI:
     """Omok AI based on alpha-beta pruning algorithm"""
     # TODO: make algorithm faster, implement machine learning to improve AI
     cnt = 0
     evaltime = 0
 
     def __init__(self, board, color):
-        if type(board) is not Omok_board or (color != 0 and color != 1):
+        if type(board) is not Board or (color != 0 and color != 1):
             raise ValueError("Class constructor must receive valid arguments")
 
         self.board = board
@@ -45,7 +45,7 @@ class Omok_ai:
     def play(self):
         while self.switch:
             if self.board.lock == 0 and self.board.status == self.color:
-                (i, j) = Omok_ai.calculate(self.board)
+                (i, j) = AI.calculate(self.board)
                 print("AI: ", end='')
                 self.board.play(i, j)
             else:
@@ -55,22 +55,22 @@ class Omok_ai:
     def calculate(board):
         depth = 2
         area = 2
-        decision = Omok_ai.alphabeta(board, depth, area, -math.inf, math.inf, (True, False)[board.status == 0])[1]
+        decision = AI.alphabeta(board, depth, area, -math.inf, math.inf, (True, False)[board.status == 0])[1]
         i = decision.trace[-1][1]
         j = decision.trace[-1][2]
-        print("took " + str(Omok_ai.cnt) + " evaluations")
-        print("each eval takes average of " + str(Omok_ai.evaltime / Omok_ai.cnt) + " seconds")
-        Omok_ai.cnt = 0
+        print("took " + str(AI.cnt) + " evaluations")
+        print("each eval takes average of " + str(AI.evaltime / AI.cnt) + " seconds")
+        AI.cnt = 0
         return (i, j)
 
     @staticmethod
     def alphabeta(node, depth, area, a, b, maximizing):
         if depth == 0 or node.status == 2 or node.status == 3 or node.status == 4 or node.status == 5:
-            return (Omok_ai.evaluateboard(node), None)
+            return (AI.evaluateboard(node), None)
         goodchild = None
         if maximizing:
-            for child in Omok_ai.nextmoveiterator(node, area):
-                childvalue = Omok_ai.alphabeta(child, depth - 1, area, a, b, False)[0]
+            for child in AI.nextmoveiterator(node, area):
+                childvalue = AI.alphabeta(child, depth - 1, area, a, b, False)[0]
                 if a < childvalue:
                     goodchild = child
                     a = childvalue
@@ -78,8 +78,8 @@ class Omok_ai:
                     break
             return (a, goodchild)
         else:
-            for child in Omok_ai.nextmoveiterator(node, area):
-                childvalue = Omok_ai.alphabeta(child, depth - 1, area, a, b, True)[0]
+            for child in AI.nextmoveiterator(node, area):
+                childvalue = AI.alphabeta(child, depth - 1, area, a, b, True)[0]
                 if b > childvalue:
                     goodchild = child
                     b = childvalue
@@ -93,19 +93,19 @@ class Omok_ai:
         possibilities = set({})
         check = False
 
-        for i in range(len(board.omok_board)):
-            for j in range(len(board.omok_board[0])):
-                if board.omok_board[i][j] == 0 or board.omok_board[i][j] == 1:
+        for i in range(len(board.board)):
+            for j in range(len(board.board[0])):
+                if board.board[i][j] == 0 or board.board[i][j] == 1:
                     check = True
                     for k in range(i - area, i + area + 1):
                         for l in range(j - area, j + area + 1):
-                            if k >= 0 and k < len(board.omok_board):
-                                if l >= 0 and l < len(board.omok_board[0]):
-                                    if board.omok_board[k][l] == -1:
+                            if k >= 0 and k < len(board.board):
+                                if l >= 0 and l < len(board.board[0]):
+                                    if board.board[k][l] == -1:
                                         possibilities.add((k, l))
 
         if not check:
-            possibilities.add((math.floor(len(board.omok_board) / 2), math.floor(len(board.omok_board[0]) / 2)))
+            possibilities.add((math.floor(len(board.board) / 2), math.floor(len(board.board[0]) / 2)))
 
         for position in possibilities:
             newboard = board.duplicate()
@@ -129,14 +129,14 @@ class Omok_ai:
 
         boardvalue = 0
 
-        for i in range(len(board.omok_board)):
-            for j in range(len(board.omok_board[0])):
-                if board.omok_board[i][j] == 0 or board.omok_board[i][j] == 1:
-                    boardvalue += Omok_ai.evaluatepoint(board, i, j)
+        for i in range(len(board.board)):
+            for j in range(len(board.board[0])):
+                if board.board[i][j] == 0 or board.board[i][j] == 1:
+                    boardvalue += AI.evaluatepoint(board, i, j)
 
-        Omok_ai.cnt += 1
+        AI.cnt += 1
         end = time.time()
-        Omok_ai.evaltime += end - start
+        AI.evaltime += end - start
 
         return boardvalue
 
@@ -162,7 +162,7 @@ class Omok_ai:
         pointvalue = 0
 
         for dir in range(1, 5):
-            pointvalue += Omok_ai.evaluateline(board, i, j, dir)
+            pointvalue += AI.evaluateline(board, i, j, dir)
 
         return pointvalue
 
@@ -187,7 +187,7 @@ class Omok_ai:
         if dir != 1 and dir != 2 and dir != 3 and dir != 4:
             raise ValueError("Wrong dir value")
 
-        color = board.omok_board[i][j]
+        color = board.board[i][j]
         weight = (-1, 1)[color == 1]
 
         if dir == 1:
@@ -214,16 +214,16 @@ class Omok_ai:
 
         for dir_index in range(0, 2):
             for movement in range(1, 5):
-                if i + dir[dir_index][0] * movement < 0 or i + dir[dir_index][0] * movement >= len(board.omok_board):
+                if i + dir[dir_index][0] * movement < 0 or i + dir[dir_index][0] * movement >= len(board.board):
                     break
-                if j + dir[dir_index][1] * movement < 0 or j + dir[dir_index][1] * movement >= len(board.omok_board[0]):
+                if j + dir[dir_index][1] * movement < 0 or j + dir[dir_index][1] * movement >= len(board.board[0]):
                     break
-                if board.omok_board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == color:
+                if board.board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == color:
                     if inrow:
                         count[dir_index][0] += 1
                     else:
                         count[dir_index][1] += 1
-                elif board.omok_board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == -1:
+                elif board.board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == -1:
                     inrow = False
                     count[dir_index][2] += 1
                 else:
