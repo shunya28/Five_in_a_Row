@@ -1,9 +1,9 @@
-#General macOS
+# macOS
 .DS_Store
 
-#Python
+# Python
 __pycache__
 
-#Videos
+# Videos
 *.mov
 *.mp4
