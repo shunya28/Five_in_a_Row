@@ -1,7 +1,8 @@
+from omok.core.board import Board
 from tkinter import *
 
 class OLabel(Label):
-    """Tkinter Label that contains location (i, j) info"""
+    """Tkinter Label with location (i, j) info"""
     def __init__(self, master, i, j, *args, **kwargs):
         Label.__init__(self, master, *args, **kwargs)
         self.i = i
@@ -9,74 +10,63 @@ class OLabel(Label):
 
 class GUI:
     """Omok GUI created with tkinter"""
-    statustext = ["Black's turn", "White's turn", "White wins!", "Black wins!", "Draw!"]
-    res_path = "omok/res/"
-    img_name = ["black", "white", "empty"]
-    img_extension = ".gif"
+    status_text = {Board.BLACK_TURN: "Black's turn",
+                   Board.BLACK_WIN: 'Black wins!',
+                   Board.WHITE_TURN: "White's turn",
+                   Board.WHITE_WIN: 'White wins!',
+                   Board.DRAW: 'Draw!'}
+    res_path = 'omok/res/'
+    img_name = {Board.EMPTY_SLOT: 'empty.gif',
+                Board.BLACK_SLOT: 'black.gif', 
+                Board.WHITE_SLOT: 'white.gif'}
 
-    def __init__(self, windowtitle, board):
+    def __init__(self, board, windowtitle='Omok'):
         self.board = board
         
         self.window = Tk()
         self.window.title(windowtitle)
 
-        self.img = []
+        self.img = {}
+        for key, name in GUI.img_name.items():
+            self.img[key] = PhotoImage(file=GUI.res_path + name)
 
-        for i in range(len(GUI.img_name)):
-            self.img.append(PhotoImage(file=GUI.res_path + GUI.img_name[i] + GUI.img_extension))
+        self.windowheight = self.board.height * self.img[0].height()
+        self.windowwidth = self.board.width * self.img[0].width()
 
-        self.windowheight = len(self.board.board) * self.img[0].height()
-        self.windowwidth = len(self.board.board[0]) * self.img[0].width()
-
-        self.window.geometry(str(self.windowwidth) + "x" + str(self.windowheight+20) + "+100+100")
+        self.window.geometry(str(self.windowwidth) + 'x' + str(self.windowheight+20) + '+100+100')
         self.window.resizable(True, True)
 
         self.labelframe = Frame(self.window, height=20, bd=0)
-        self.labelframe.pack(side="top", fill="x")
+        self.labelframe.pack(side='top', fill='x')
+
+        self.resetbutton = Button(self.labelframe, text='Reset', command=self.board.reset)
+        self.resetbutton.pack(side='left', fill='y')
+
+        self.statuslabel = Label(self.labelframe, text=GUI.status_text[self.board.status], height=1, width=10)
+        self.statuslabel.pack(side='right', fill='y')
 
         self.gameframe = Frame(self.window, bd=0)
-        self.gameframe.pack(expand=True, fill="both")
-
-        self.resetbutton = Button(self.labelframe, text="Reset", command=self.onclick2)
-        self.resetbutton.pack(side="left", fill="y")
-
-        self.statuslabel = Label(self.labelframe, text=GUI.statustext[board.status], height=1, width=10)
-        self.statuslabel.pack(side="right", fill="y")
+        self.gameframe.pack(expand=True, fill='both')
 
         self.board_gui = []
-
-        for i in (range(len(self.board.board))):
+        for i in range(self.board.height):
             self.board_gui.append([])
-            for j in (range(len(self.board.board[0]))):
-                self.board_gui[i].append(OLabel(self.gameframe, i=i, j=j, 
-                                                bd=0, padx=0, pady=0, 
-                                                image=self.img[self.board.board[i][j]], height=self.img[0].height(), width=self.img[0].width()))
-                self.board_gui[i][j].bind("<Button-1>", self.onclick1)
+            for j in range(self.board.width):
+                self.board_gui[i].append(OLabel(self.gameframe, i=i, j=j, bd=0, padx=0, pady=0, 
+                                                image=self.img[self.board.board[i][j]], 
+                                                height=self.img[self.board.board[i][j]].height(), 
+                                                width=self.img[self.board.board[i][j]].width()))
+                self.board_gui[i][j].bind('<Button-1>', lambda x: self.board.place(x.widget.i, x.widget.j))
                 self.board_gui[i][j].grid(row=i, column=j)
 
         self.board.load_gui(self)
-
         self.window.mainloop()
 
-    def onclick1(self, event):
-        self.board.play(event.widget.i, event.widget.j)
-
-    def onclick2(self):
-        self.board.reset()
-
-    def place(self, i, j, flag):
-        if flag == 0:
-            self.statuslabel["text"] = GUI.statustext[self.board.status]
-            self.board_gui[i][j]["image"] = self.img[1 - self.board.status]
-        elif flag == 2 or flag == 3:
-            self.statuslabel["text"] = GUI.statustext[flag]
-            self.board_gui[i][j]["image"] = self.img[3 - self.board.status]
-        elif flag == 4:
-            self.statuslabel["text"] = GUI.statustext[flag]
-            self.board_gui[i][j]["image"] = self.img[5 - self.board.status]
-
-    def clear(self):
-        self.statuslabel["text"] = GUI.statustext[self.board.status]
-        for i in (range(len(self.board.board))):
-            for j in (range(len(self.board.board[0]))):
-                self.board_gui[i][j]["image"] = self.img[self.board.board[i][j]]
+    def update(self, i=None, j=None):
+        self.statuslabel['text'] = GUI.status_text[self.board.status]
+        if i == None or j == None:
+            for i in range(self.board.height):
+                for j in range(self.board.width):
+                    self.board_gui[i][j]['image'] = self.img[self.board.board[i][j]]
+        else:
+            self.board_gui[i][j]['image'] = self.img[self.board.board[i][j]]

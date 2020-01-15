@@ -1,139 +1,127 @@
-from omok.core.rules import *
+from omok.core.rules import Rules
+from omok.core.traces import Traces
 
 class Board:
     """Omok game board engine"""
-    def __init__(self, height, width, silent=False):
+    EMPTY_SLOT = 0
+    BLACK_SLOT = 1
+    WHITE_SLOT = 2
+
+    BLACK_TURN = 10
+    BLACK_WIN = 11
+    WHITE_TURN = 20
+    WHITE_WIN = 21
+    DRAW = 30
+
+    INVALID_PLACEMENT = 40
+
+    INIT_STATUS = BLACK_TURN
+
+    def __init__(self, width=16, height=10, silent=False):
         if height < 5 or width < 5:
-            raise ValueError("Board size must be greater than 5x5")
-
-        self.lock = 0
-        # 0 = waiting (unlocked) // 1 = processing (locked)
-        # (for synchronization purposes)
-
-        self.status = 0
-        # 0 = black's turn // 1 = white's turn // 2 = white wins // 3 = black wins
-        # 4 = draw by white // 5 = draw by black // 6 = tracing
-
-        self.board = []
-        # -1 = empty // 0 = black // 1 = white
-
-        self.trace = []
-        # trace of all movements made by players
-
-        self.silent = silent
-        # set to True in order to block all stdout messages
-
-        for i in range(height):
-            self.board.append([])
-            for j in range(width):
-                self.board[i].append(-1)
-
+            raise ValueError('Board size must be greater than 5x5')
+        self.width = width
+        self.height = height
+        self.silent = silent # if True, blocks all CLI messages
+        self.board = None
+        self.empty_slots = None
+        self.traces = None
+        self.status = None
         self.gui = None
+        self.reset()
+        self.print('Omok engine loaded')
 
-        self.print("Omok engine loaded")
+    def __str__(self):
+        board_str  = '\nBoard Status: ' + str(self.status)
+        board_str += '\nGUI: ' + str(self.gui)
+        board_str += '\nSilence Mode: ' + str(self.silent)
+        board_str += '\nCurrent State:'
+        board_str += self.__repr__()
+        return board_str
 
-    def play(self, i, j):
-        # return value: -1 = ineffective play or significant error // 0 = normal play
-        # 2 = white's win // 3 = black's win // 4 = draw by white
-        self.lock = 1
-        if self.status == 2:
-            self.print("Game over: white wins!")
-            return -1
-        elif self.status == 3:
-            self.print("Game over: black wins!")
-            return -1
-        elif self.status == 4:
-            self.print("Game over: draw!")
-            return -1
-        elif self.status != 0 and self.status != 1:
-            self.print("Error: status attribute has been inappropriately modified; current status value is %d" % self.status)
-            return -1
-        elif i < 0 or j < 0 or i >= len(self.board) or j >= len(self.board[0]):
-            self.print("Cannot place piece outside the board range: (%d, %d)" % (i, j))
-            return -1
-        elif self.board[i][j] != -1:
-            self.print("Cannot place piece on a non-empty spot: (%d, %d) already placed with %d" % (i, j, self.board[i][j]))
-            return -1
-        elif is_three(self.board, i, j):
-            self.print("Cannot place piece on a spot that creates three by three placement")
-            return -1
-        else:
-            self.board[i][j] = self.status
-            self.trace.append((self.status, i, j))
-            self.print("Placed on (%d, %d) by %s" % (i, j, ("white", "black")[self.status == 0]))
-            self.status = 1 - self.status
-
-        if is_defeat(self.board, i, j):
-            self.status += 2
-            if self.status == 2:
-                self.print("Game over: white wins!")
-                flag = 2
-            elif self.status == 3:
-                self.print("Game over: black wins!")
-                flag = 3
-        elif is_draw(self.board):
-            self.status += 4
-            self.print("Game over: draw!")
-            flag = 4
-        else:
-            flag = 0
-
-        self._update_gui(1, i, j, flag)
-        self.lock = 0
-        return flag
+    def __repr__(self):
+        board_repr = '\n'
+        for i in range (len(self.board)):
+            for j in range(len(self.board[0])):
+                if self.board[i][j] == Board.EMPTY_SLOT:
+                    board_repr += '-'
+                else:
+                    board_repr += str(self.board[i][j])
+            board_repr += '\n'
+        board_repr += '\n'
+        return board_repr
 
     def reset(self):
-        self.lock = 1
-        for i in range (len(self.board)):
-            for j in range(len(self.board[0])):
-                self.board[i][j] = -1
-        self.status = 0
-        self.print("Omok board has been reset")
-        self._update_gui(0)
-        self.lock = 0
+        self.board = []
+        for i in range (self.height):
+            self.board.append([])
+            for j in range(self.width):
+                self.board[i].append(Board.EMPTY_SLOT)
+        self.empty_slots = self.width * self.height
+        self.traces = Traces()
+        self.status = Board.INIT_STATUS
+        self.clear_gui()
+        self.print('Omok board has been reset')
 
-    def print(self, message):
-        if self.silent:
-            return
-        print(message)
+    def place(self, i, j):
+        if not self.is_valid_slot(i, j):
+            return Board.INVALID_PLACEMENT
 
-    def printboard(self):
-        print()
-        for i in range (len(self.board)):
-            for j in range(len(self.board[0])):
-                if self.board[i][j] == -1:
-                    print("-", end='')
-                else:
-                    print(self.board[i][j], end='')
-            print()
-        print()
+        self.board[i][j] = Board.BLACK_SLOT if (self.status == Board.BLACK_TURN) else Board.WHITE_SLOT
+        self.empty_slots -= 1
+        self.traces.push(self.board[i][j], i, j)
+        self.print(self.traces.peek())
 
-    def printtrace(self):
-        for i in range(len(self.trace)):
-            print("%d: (%d, %d) by %s" % ((i + 1), self.trace[i][1], self.trace[i][2], ("white", "black")[self.trace[i][0] == 0]))
+        if Rules.is_defeat(self.board, i, j):
+            if self.status == Board.BLACK_TURN:
+                self.print('Game over: black wins!')
+                self.status = Board.BLACK_WIN
+            elif self.status == Board.WHITE_TURN:
+                self.print('Game over: white wins!')
+                self.status = Board.WHITE_WIN
+        elif self.empty_slots == 0:
+            self.print('Game over: draw!')
+            self.status = Board.DRAW
+        else:
+            self.status = Board.BLACK_TURN if (self.status == Board.WHITE_TURN) else Board.WHITE_TURN
+
+        self.update_gui(i, j)
+        return self.status
+    
+    def is_valid_slot(self, i, j):
+        if self.status == Board.BLACK_WIN or self.status == Board.WHITE_WIN:
+            self.print('Game over: ' + ('black' if (self.status == Board.BLACK_WIN) else 'white') + ' wins!')
+            return False
+        elif self.status == Board.DRAW:
+            self.print('Game over: draw!')
+            return False
+        elif i < 0 or j < 0 or i >= self.height or j >= self.width:
+            self.print('Cannot place piece outside the board range: ({}, {})'.format(i, j))
+            return False
+        elif self.board[i][j] != Board.EMPTY_SLOT:
+            self.print('Cannot place piece on a non-empty spot: ({}, {}) already placed with {}'.format(i, j, self.board[i][j]))
+            return False
+        elif Rules.is_three(self.board, i, j):
+            self.print('Cannot place piece on a spot that creates three by three condition')
+            return False
+        elif self.status == Board.BLACK_TURN or self.status == Board.WHITE_TURN:
+            return True
+        else:
+            self.print('Invalid status code {}'.format(self.status))
+            return False
 
     def load_gui(self, gui):
         self.gui = gui
-        self.print("GUI successfully loaded to game engine")
+        self.print('GUI successfully loaded to game engine')
 
-    def _update_gui(self, action, i=None, j=None, flag=None):
-        if self.gui == None:
-            return
-        if action == 0:
-            self.gui.clear()
-        elif action == 1:
-            self.gui.place(i, j, flag)
+    def update_gui(self, i, j):
+        if self.gui != None:
+            self.gui.update(i=i, j=j)
 
-    def duplicate(self):
-        """Returns a new silent board instance with same board status, without GUI"""
-        newboard = Board(len(self.board), len(self.board[0]), silent=True)
-        newboard.status = self.status
+    def clear_gui(self):
+        if self.gui != None:
+            self.gui.update()
 
-        for i in range(len(self.board)):
-            for j in range(len(self.board[0])):
-                newboard.board[i][j] = self.board[i][j]
-
-        for i in range(len(self.trace)):
-            newboard.trace.append(self.trace[i])
-
-        return newboard
+    def print(self, message):
+        if not self.silent:
+            print(message)
