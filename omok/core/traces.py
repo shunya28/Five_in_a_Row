@@ -16,7 +16,10 @@ class Traces:
         self.traces.append((status, i, j))
 
     def peek(self):
-        return Traces.format_trace(len(self.traces), self.traces[-1])
+        return self.traces[-1]
+
+    def size(self):
+        return len(self.traces)
     
     def clear(self):
         self.traces = []

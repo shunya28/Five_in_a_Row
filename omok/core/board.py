@@ -1,3 +1,4 @@
+from copy import deepcopy
 from omok.core.rules import Rules
 from omok.core.traces import Traces
 
@@ -27,6 +28,7 @@ class Board:
         self.empty_slots = None
         self.traces = None
         self.status = None
+        # self.lock = False # For synchronization purposes
         self.gui = None
         self.reset()
         self.print('Omok engine loaded')
@@ -70,7 +72,7 @@ class Board:
         self.board[i][j] = Board.BLACK_SLOT if (self.status == Board.BLACK_TURN) else Board.WHITE_SLOT
         self.empty_slots -= 1
         self.traces.push(self.board[i][j], i, j)
-        self.print(self.traces.peek())
+        self.print(self.traces.format_trace(self.traces.size(), self.traces.peek()))
 
         if Rules.is_defeat(self.board, i, j):
             if self.status == Board.BLACK_TURN:
@@ -125,3 +127,11 @@ class Board:
     def print(self, message):
         if not self.silent:
             print(message)
+
+    def copy(self):
+        copy_board = Board(width=self.width, height=self.height, silent=True)
+        copy_board.board = deepcopy(self.board)
+        copy_board.empty_slots = self.empty_slots
+        copy_board.status = self.status
+        copy_board.traces = deepcopy(self.traces)
+        return copy_board
