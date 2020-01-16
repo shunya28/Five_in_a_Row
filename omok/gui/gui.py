@@ -1,12 +1,6 @@
+from tkinter import Tk, Frame, Label, Button, PhotoImage
 from omok.core.board import Board
-from tkinter import *
-
-class OLabel(Label):
-    """Tkinter Label with location (i, j) info"""
-    def __init__(self, master, i, j, *args, **kwargs):
-        Label.__init__(self, master, *args, **kwargs)
-        self.i = i
-        self.j = j
+from omok.gui.omokslot import OmokSlot
 
 class GUI:
     """Omok GUI created with tkinter"""
@@ -52,10 +46,10 @@ class GUI:
         for i in range(self.board.height):
             self.board_gui.append([])
             for j in range(self.board.width):
-                self.board_gui[i].append(OLabel(self.gameframe, i=i, j=j, bd=0, padx=0, pady=0, 
-                                                image=self.img[self.board.board[i][j]], 
-                                                height=self.img[self.board.board[i][j]].height(), 
-                                                width=self.img[self.board.board[i][j]].width()))
+                self.board_gui[i].append(OmokSlot(self.gameframe, i=i, j=j, bd=0, padx=0, pady=0, 
+                                                  image=self.img[self.board.board[i][j]], 
+                                                  height=self.img[self.board.board[i][j]].height(), 
+                                                  width=self.img[self.board.board[i][j]].width()))
                 self.board_gui[i][j].bind('<Button-1>', lambda x: self.board.place(x.widget.i, x.widget.j))
                 self.board_gui[i][j].grid(row=i, column=j)
 
