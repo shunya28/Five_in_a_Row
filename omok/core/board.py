@@ -132,6 +132,6 @@ class Board:
         if self.gui != None:
             self.gui.update()
 
-    def print(self, message):
+    def print(self, message, end='\n'):
         if not self.silent:
-            print(message)
+            print(message, end=end)
