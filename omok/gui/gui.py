@@ -16,6 +16,7 @@ class GUI:
 
     def __init__(self, board, windowtitle='Omok'):
         self.board = board
+        self.board.lock.acquire()
         
         self.window = Tk()
         self.window.title(windowtitle)
@@ -54,6 +55,7 @@ class GUI:
                 self.board_gui[i][j].grid(row=i, column=j)
 
         self.board.load_gui(self)
+        self.board.lock.release()
         self.window.mainloop()
 
     def update(self, i=None, j=None):

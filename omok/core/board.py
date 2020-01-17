@@ -1,4 +1,4 @@
-from copy import deepcopy
+from threading import Lock
 from omok.core.rules import Rules
 from omok.core.traces import Traces
 
@@ -14,8 +14,7 @@ class Board:
     WHITE_WIN = 21
     DRAW = 30
 
-    INVALID_PLACEMENT = 40
-
+    INVALID_CALL = 40
     INIT_STATUS = BLACK_TURN
 
     def __init__(self, width=16, height=10, silent=False):
@@ -28,8 +27,8 @@ class Board:
         self.empty_slots = None
         self.traces = None
         self.status = None
-        # self.lock = False # For synchronization purposes
         self.gui = None
+        self.lock = Lock()
         self.reset()
         self.print('Omok engine loaded')
 
@@ -54,6 +53,9 @@ class Board:
         return board_repr
 
     def reset(self):
+        if not self.lock.acquire(False):
+            self.print('Omok board is currently locked')
+            return
         self.board = []
         for i in range (self.height):
             self.board.append([])
@@ -64,10 +66,15 @@ class Board:
         self.status = Board.INIT_STATUS
         self.clear_gui()
         self.print('Omok board has been reset')
+        self.lock.release()
 
     def place(self, i, j):
+        if not self.lock.acquire(False):
+            self.print('Omok board is currently locked')
+            return Board.INVALID_CALL
         if not self.is_valid_slot(i, j):
-            return Board.INVALID_PLACEMENT
+            self.lock.release()
+            return Board.INVALID_CALL
 
         self.board[i][j] = Board.BLACK_SLOT if (self.status == Board.BLACK_TURN) else Board.WHITE_SLOT
         self.empty_slots -= 1
@@ -88,6 +95,7 @@ class Board:
             self.status = Board.BLACK_TURN if (self.status == Board.WHITE_TURN) else Board.WHITE_TURN
 
         self.update_gui(i, j)
+        self.lock.release()
         return self.status
     
     def is_valid_slot(self, i, j):
@@ -127,11 +135,3 @@ class Board:
     def print(self, message):
         if not self.silent:
             print(message)
-
-    def copy(self):
-        copy_board = Board(width=self.width, height=self.height, silent=True)
-        copy_board.board = deepcopy(self.board)
-        copy_board.empty_slots = self.empty_slots
-        copy_board.status = self.status
-        copy_board.traces = deepcopy(self.traces)
-        return copy_board
