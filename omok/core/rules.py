@@ -24,24 +24,15 @@ class Rules:
         height = len(board)
         width = len(board[0])
 
-        for index in range(1, 6):
-            _i = i + index * direction[0]
-            _j = j + index * direction[1]
-            if _i < 0 or _j < 0 or _i >= height or _j >= height:
-                break
-            if board[i][j] == board[_i][_j]:
-                total += 1
-            else:
-                break
-        
-        for index in range(1, 6):
-            _i = i - index * direction[0]
-            _j = j - index * direction[1]
-            if _i < 0 or _j < 0 or _i >= height or _j >= height:
-                break
-            if board[i][j] == board[_i][_j]:
-                total += 1
-            else:
-                break
+        for weight in [-1, 1]:
+            for index in range(1, 6):
+                _i = i + weight * index * direction[0]
+                _j = j + weight * index * direction[1]
+                if _i < 0 or _j < 0 or _i >= height or _j >= height:
+                    break
+                if board[i][j] == board[_i][_j]:
+                    total += 1
+                else:
+                    break
 
         return total
