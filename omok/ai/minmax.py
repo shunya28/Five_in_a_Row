@@ -48,7 +48,7 @@ class MinMax:
                 else:
                     value = 1.0
                 count = B_count + W_count # one of these is 0
-                value *= 10**(count - 3)
+                value *= 13**(count - 3)
             MinMax.criteria[pattern] = value
 
     @staticmethod
