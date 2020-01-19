@@ -114,7 +114,7 @@ class MinMax:
         if depth == 0:
             return best_move
         else:
-            return min
+            return min if (for_black) else max
 
     @staticmethod
     def next_moves(board, empty_slots, search_area):
@@ -125,12 +125,14 @@ class MinMax:
                 if not board[i][j] == Board.EMPTY_SLOT:
                     for k in range(-search_area, search_area + 1):
                         for l in range(-search_area, search_area + 1):
-                            moves.add((i + k, j + l))
+                            move = (i + k, j + l)
+                            if move in empty_slots:
+                                moves.add(move)
 
         if len(moves) == 0:
-            moves.add(int(len(board) / 2), int(len(board[0]) / 2))
+            moves.add((int(len(board) / 2), int(len(board[0]) / 2)))
         
-        return moves.intersection(empty_slots)
+        return moves
 
     @staticmethod
     def evaluate_board(board):
