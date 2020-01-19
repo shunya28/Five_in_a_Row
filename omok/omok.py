@@ -8,6 +8,7 @@ def run():
     board = Board(width=boardwidth, height=boardheight)
     ai = AI(board)
     ai.load(board.WHITE_TURN)
+    # ai.load(board.BLACK_TURN)
     ai.start()
     GUI(board)
     ai.stop()
