@@ -42,8 +42,8 @@ class Board:
 
     def __repr__(self):
         board_repr = '\n'
-        for i in range (len(self.board)):
-            for j in range(len(self.board[0])):
+        for i in range (self.height):
+            for j in range(self.width):
                 if self.board[i][j] == Board.EMPTY_SLOT:
                     board_repr += '-'
                 else:
