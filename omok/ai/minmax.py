@@ -1,220 +1,159 @@
-from random import random
-from time import sleep
+from copy import deepcopy
+from omok.core.board import Board
+from omok.core.rules import Rules
 
 class MinMax:
+    MAX_DEPTH = 2
+    SEARCH_AREA = 1
+    criteria = None
+    
     @staticmethod
-    def temp(board):
-        while True:
-            (i, j) = (int(board.height * random()), int(board.width * random()))
-            if board.board[i][j] == board.EMPTY_SLOT:
-                sleep(2)
-                return i, j
-                break
-
-    @staticmethod
-    def decide_next_move(board):
-        depth = 2
-        area = 2
-        decision = MinMax.alphabeta(board, depth, area, -math.inf, math.inf, (True, False)[board.status == 0])[1]
-        i = decision.trace[-1][1]
-        j = decision.trace[-1][2]
-        return (i, j)
-
-    @staticmethod
-    def alphabeta(node, depth, area, a, b, maximizing):
-        if depth == 0 or node.status == 2 or node.status == 3 or node.status == 4 or node.status == 5:
-            return (MinMax.evaluateboard(node), None)
-        goodchild = None
-        if maximizing:
-            for child in MinMax.nextmoveiterator(node, area):
-                childvalue = MinMax.alphabeta(child, depth - 1, area, a, b, False)[0]
-                if a < childvalue:
-                    goodchild = child
-                    a = childvalue
-                if a >= b:
-                    break
-            return (a, goodchild)
-        else:
-            for child in MinMax.nextmoveiterator(node, area):
-                childvalue = MinMax.alphabeta(child, depth - 1, area, a, b, True)[0]
-                if b > childvalue:
-                    goodchild = child
-                    b = childvalue
-                if a >= b:
-                    break
-            return (b, goodchild)
-
-    @staticmethod
-    def nextmoveiterator(board, area):
-        """Iterates every possible next move in given area"""
-        possibilities = set({})
-        check = False
-
-        for i in range(len(board.board)):
-            for j in range(len(board.board[0])):
-                if board.board[i][j] == 0 or board.board[i][j] == 1:
-                    check = True
-                    for k in range(i - area, i + area + 1):
-                        for l in range(j - area, j + area + 1):
-                            if k >= 0 and k < len(board.board):
-                                if l >= 0 and l < len(board.board[0]):
-                                    if board.board[k][l] == -1:
-                                        possibilities.add((k, l))
-
-        if not check:
-            possibilities.add((math.floor(len(board.board) / 2), math.floor(len(board.board[0]) / 2)))
-
-        for position in possibilities:
-            newboard = board.duplicate()
-            newboard.place(position[0], position[1])
-            yield newboard
-
-    @staticmethod
-    def evaluateboard(board):
+    def initiate_criteria():
         """
-        Returns a value that represents the advantageousness of current board status
-        Smaller value denotes the board is more in favor of black, and vice versa
+        Sets up criteria for 5-slot row patterns
 
-        Evaluation is based on
-        1. How many 5-in-a-row is achievable in current state
-        2. For each achievable 5-in-a-row,
-            a. How many stones are already placed
-            b. Whether it is achievable both ways
-            c. How much blockage is present and how close they are
+        This criteria only judges the likeliness of filling up all 5 slots with the same color
+
+        ex. BBEBB = Very likely to be filled, so high score
+            BWEEB = Will never be filled since B and W are mixed, so 0 score
+        
+        Hence, it must be checked what color surrounds the 5-slot pattern before using it.
+
+        Criteria is stored as class variable, in dictionary structure of criteria[pattern] = value
         """
-        boardvalue = 0
+        if MinMax.criteria != None:
+            return
 
-        for i in range(len(board.board)):
-            for j in range(len(board.board[0])):
-                if board.board[i][j] == 0 or board.board[i][j] == 1:
-                    boardvalue += MinMax.evaluatepoint(board, i, j)
+        MinMax.criteria = dict()
+        charset = [Board.EMPTY_SLOT, Board.BLACK_SLOT, Board.WHITE_SLOT]
 
-        return boardvalue
+        for a in charset:
+            for b in charset:
+                for c in charset:
+                    for d in charset:
+                        for e in charset:
+                            pattern = a + b + c + d + e
+                            MinMax.criteria[pattern] = 0.0
 
-    @staticmethod
-    def evaluatepoint(board, i, j):
-        """
-        Returns a value that represents the advantageousness of current point
-        Smaller value denotes the point is more in favor of black, and vice versa
-
-        Evaluation is based on
-        1. How many 5-in-a-row is achievable at current point
-        2. For each achievable 5-in-a-row,
-            a. How many stones are already placed
-            b. Whether it is achievable both ways
-            c. How much blockage is present and how close they are
-
-        Note that dir value refers to the following:
-        1 = diagonal (left top to right bottom)
-        2 = vertical
-        3 = diagonal (right top to left bottom)
-        4 = horizontal
-        """
-        pointvalue = 0
-
-        for dir in range(1, 5):
-            pointvalue += MinMax.evaluateline(board, i, j, dir)
-
-        return pointvalue
-
-    @staticmethod
-    def evaluateline(board, i, j, dir):
-        """
-        Returns a value that represents the advantageousness of current 9-space line
-        Smaller value denotes the line is more in favor of black, and vice versa
-
-        Evaluation is based on
-        1. Whether a 5-in-a-row is achievable in current line, and if so,
-            a. How many stones are already placed
-            b. Whether it is achievable both ways
-            c. How much blockage is present and how close they are
-
-        Note that dir value refers to the following:
-        1 = diagonal (left top to right bottom)
-        2 = vertical
-        3 = diagonal (right top to left bottom)
-        4 = horizontal
-        """
-        if dir != 1 and dir != 2 and dir != 3 and dir != 4:
-            raise ValueError("Wrong dir value")
-
-        color = board.board[i][j]
-        weight = (-1, 1)[color == 1]
-
-        if dir == 1:
-            dir = ((-1, -1), (1, 1))
-        elif dir == 2:
-            dir = ((-1, 0), (1, 0))
-        elif dir == 3:
-            dir = ((-1, 1), (1, -1))
-        else:
-            dir = ((0, 1), (0, -1))
-
-        count = [[0, 0, 0], [0, 0, 0], [1, 1, 0]]
-        # outer list:
-        # [first direction count, opposite direction count, total count]
-        # innter list:
-        # [number of identical stones in row in next 4 spaces until blockage,
-        #  number of identical stones in next 4 spaces until blockage,
-        #  number of empty spots in next 4 spaces until blockage]
-        # 00--1  --> [1, 2] (supposing that the first 0 is the origin)
-        # 0-01-  --> [1, 1]
-        # 010--  --> [0, 0]
-
-        inrow = True
-
-        for dir_index in range(0, 2):
-            for movement in range(1, 5):
-                if i + dir[dir_index][0] * movement < 0 or i + dir[dir_index][0] * movement >= len(board.board):
-                    break
-                if j + dir[dir_index][1] * movement < 0 or j + dir[dir_index][1] * movement >= len(board.board[0]):
-                    break
-                if board.board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == color:
-                    if inrow:
-                        count[dir_index][0] += 1
-                    else:
-                        count[dir_index][1] += 1
-                elif board.board[i + dir[dir_index][0] * movement][j + dir[dir_index][1] * movement] == -1:
-                    inrow = False
-                    count[dir_index][2] += 1
+        for pattern in MinMax.criteria.keys():
+            B_count = pattern.count(charset[1])
+            W_count = pattern.count(charset[2])
+            if B_count > 0 and W_count > 0:
+                value = 0.0
+            elif B_count == 0 and W_count == 0:
+                value = 0.0
+            else:
+                if B_count > 0:
+                    value = -1.0
                 else:
+                    value = 1.0
+                count = B_count + W_count # one of these is 0
+                value *= 10**(count - 3)
+            MinMax.criteria[pattern] = value
+
+    @staticmethod
+    def decide_next_move(board, empty_slots, condition):
+        if MinMax.criteria == None:
+            MinMax.initiate_criteria()
+
+        padded_board = MinMax.pad(board)
+        padded_empty_slots = set()
+
+        for empty_slot in empty_slots:
+            padded_empty_slots.add((empty_slot[0] + 1, empty_slot[1] + 1))
+
+        next_move = MinMax.alphabeta(padded_board, padded_empty_slots, 
+                                    0, MinMax.SEARCH_AREA, 1000000.0, -1000000.0, 
+                                    condition == Board.BLACK_TURN)
+        return map(lambda x: x - 1, next_move)
+    
+    @staticmethod
+    def pad(board):
+        board = deepcopy(board)
+        pad = '\0'
+        
+        horizontal_padding = [pad] * len(board[0])
+        board.insert(0, list(horizontal_padding))
+        board.append(list(horizontal_padding))
+        
+        for i in range(len(board)):
+            board[i].insert(0, pad)
+            board[i].append(pad)
+
+        return board
+
+    @staticmethod # Black will try to minimize towards -1, and white maximize towards 1
+    def alphabeta(board, empty_slots, depth, search_area, min, max, for_black):
+        if depth == MinMax.MAX_DEPTH:
+            return MinMax.evaluate_board(board)
+        for move in MinMax.next_moves(board, empty_slots, search_area):
+            next_board = deepcopy(board)
+            next_board[move[0]][move[1]] = Board.BLACK_SLOT if (for_black) else Board.WHITE_SLOT
+            next_empty_slots = deepcopy(empty_slots)
+            next_empty_slots.remove(move)
+
+            value = 0.0 if (len(next_empty_slots) == 0) else\
+                        MinMax.alphabeta(next_board, next_empty_slots, 
+                                        depth + 1, search_area, 
+                                        min, max, not for_black)
+            if value == None:
+                continue
+            if for_black:
+                if min > value:
+                    best_move = move
+                    min = value
+                if min <= max:
+                    break
+            else:
+                if max < value:
+                    best_move = move
+                    max = value
+                if max >= min:
                     break
 
-        for count_index in range(0, 3):
-            for dir_index in range(0, 2):
-                count[2][count_index] += count[dir_index][count_index]
-
-        if count[2][0] + count[2][1] + count[2][2] < 5 or count[2][0] > 5:
-            return 0
-        elif count[2][0] == 5:
-            return 100000000 * weight
-        elif count[2][0] == 4:
-            if count[0][2] >= 1 and count[0][2] >= 1:
-                return 1000000 * weight
-            elif count[2][2] >= 1:
-                return 1000 * weight
-            else:
-                return 0
-        elif count[2][0] == 3:
-            if count[0][2] >= 1 and count[0][2] >= 1:
-                return 1000 * weight
-            elif count[2][2] >= 1:
-                return 100 * weight
-            else:
-                return 0
-        elif count[2][0] == 2:
-            if count[0][2] >= 1 and count[0][2] >= 1:
-                return 10 * weight
-            elif count[2][2] >= 1:
-                return 2 * weight
-            else:
-                return 0
-        elif count[2][0] == 1:
-            if count[0][2] >= 1 and count[0][2] >= 1:
-                return 10 * weight
-            elif count[2][2] >= 1:
-                return weight
-            else:
-                return 0
+        if depth == 0:
+            return best_move
         else:
-            return 0
+            return min
+
+    @staticmethod
+    def next_moves(board, empty_slots, search_area):
+        """Generates possible next moves in given area"""
+        moves = set()
+        for i in range(1, len(board) - 1):
+            for j in range(1, len(board[0]) - 1):
+                if not board[i][j] == Board.EMPTY_SLOT:
+                    for k in range(-search_area, search_area + 1):
+                        for l in range(-search_area, search_area + 1):
+                            moves.add((i + k, j + l))
+
+        if len(moves) == 0:
+            moves.add(int(len(board) / 2), int(len(board[0]) / 2))
+        
+        return moves.intersection(empty_slots)
+
+    @staticmethod
+    def evaluate_board(board):
+        value = 0.0
+        for i in range(3, len(board) - 3):
+            for j in range(3, len(board[0]) - 3):
+                value += MinMax.evaluate_point(board, i, j)
+        return value
+        
+    @staticmethod
+    def evaluate_point(board, i, j):
+        value = 0.0
+        for direction in Rules.DIRECTIONS.values():
+            str_line = ''
+            for index in range(-3, 4):
+                _i = i + index * direction[0]
+                _j = j + index * direction[1]
+                str_line += board[_i][_j]
+            line_value = MinMax.criteria.get(str_line[1:6], 0.0)
+            end = str_line[::6]
+            if line_value < 0 and Board.BLACK_SLOT in end:
+                line_value = 0
+            elif line_value > 0 and Board.WHITE_SLOT in end:
+                line_value = 0
+            value += line_value
+        return value
