@@ -35,6 +35,7 @@ class AI:
         self.board.print('Omok AI stopped')
 
     def play(self, status_condition):
+        sleep(2.0)
         while not self.exit_flag:
             if self.board.status == status_condition:
                 self.board.lock.acquire()
