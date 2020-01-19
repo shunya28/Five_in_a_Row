@@ -1,22 +1,16 @@
 class Rules:
+    DIRECTIONS = {
+        'W-E' : (0, 1),
+        'NW-SE': (1, 1),
+        'N-S' : (1, 0),
+        'NE-SW': (1, -1)
+    }
+
     @staticmethod
     def is_defeat(board, i, j):
-        direction1 = Rules.count(board, i, j, -1, -1, board[i][j], 0)
-        direction2 = Rules.count(board, i, j, 1, 1, board[i][j], 0)
-        if (direction1 + direction2 - 1) == 5:
-            return True
-        direction1 = Rules.count(board, i, j, -1, 0, board[i][j], 0)
-        direction2 = Rules.count(board, i, j, 1, 0, board[i][j], 0)
-        if (direction1 + direction2 - 1) == 5:
-            return True
-        direction1 = Rules.count(board, i, j, -1, 1, board[i][j], 0)
-        direction2 = Rules.count(board, i, j, 1, -1, board[i][j], 0)
-        if (direction1 + direction2 - 1) == 5:
-            return True
-        direction1 = Rules.count(board, i, j, 0, 1, board[i][j], 0)
-        direction2 = Rules.count(board, i, j, 0, -1, board[i][j], 0)
-        if (direction1 + direction2 - 1) == 5:
-            return True
+        for direction in Rules.DIRECTIONS.values():
+            if Rules.count(board, i, j, direction) == 5:
+                return True
         return False
 
     @staticmethod
@@ -25,13 +19,29 @@ class Rules:
         return False
 
     @staticmethod
-    def count(board, i, j, i_direction, j_direction, player, depth):
-        if i < 0 or j < 0 or i >= len(board) or j >= len(board[0]):
-            return 0
-        elif depth >= 6:
-            return 0
-        elif (board[i][j] == player):
-            return 1 + Rules.count(board, i + i_direction, j + j_direction, 
-                                    i_direction, j_direction, player, depth + 1)
-        else:
-            return 0
+    def count(board, i, j, direction):
+        total = 1
+        height = len(board)
+        width = len(board[0])
+
+        for index in range(1, 6):
+            _i = i + index * direction[0]
+            _j = j + index * direction[1]
+            if _i < 0 or _j < 0 or _i >= height or _j >= height:
+                break
+            if board[i][j] == board[_i][_j]:
+                total += 1
+            else:
+                break
+        
+        for index in range(1, 6):
+            _i = i - index * direction[0]
+            _j = j - index * direction[1]
+            if _i < 0 or _j < 0 or _i >= height or _j >= height:
+                break
+            if board[i][j] == board[_i][_j]:
+                total += 1
+            else:
+                break
+
+        return total
