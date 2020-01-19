@@ -1,6 +1,7 @@
 from threading import Thread
 from time import sleep
 from omok.ai.minmax import MinMax
+from omok.core.board import Board
 
 class AI:
     """Omok AI Runner"""
@@ -13,6 +14,8 @@ class AI:
     def load(self, status_condition):
         if len(self.threads) >= 2:
             self.board.print('No more AI threads can be created')
+        elif status_condition != Board.BLACK_TURN and status_condition != Board.WHITE_TURN:
+            self.board.print('Invalid status condition for AI')
         elif len(self.threads) == 1 and status_condition == self.threads[0][1]:
             self.board.print('Cannot create duplicate AI threads with the same status condition')
         else:
@@ -35,7 +38,7 @@ class AI:
         while not self.exit_flag:
             if self.board.status == status_condition:
                 self.board.lock.acquire()
-                (i, j) = MinMax.temp(self.board) # MinMax.calculate(self.board.board)
+                (i, j) = MinMax.decide_next_move(self.board.board, self.board.empty_slots, status_condition)
                 self.board.lock.release()
                 self.board.print('AI - ', end='')
                 self.board.place(i, j)
