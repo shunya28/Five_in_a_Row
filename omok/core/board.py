@@ -4,9 +4,9 @@ from omok.core.traces import Traces
 
 class Board:
     """Omok game board engine"""
-    EMPTY_SLOT = 0
-    BLACK_SLOT = 1
-    WHITE_SLOT = 2
+    EMPTY_SLOT = '-' # These three variables must be single character
+    BLACK_SLOT = 'B'
+    WHITE_SLOT = 'W'
 
     BLACK_TURN = 10
     BLACK_WIN = 11
@@ -44,10 +44,7 @@ class Board:
         board_repr = '\n'
         for i in range (self.height):
             for j in range(self.width):
-                if self.board[i][j] == Board.EMPTY_SLOT:
-                    board_repr += '-'
-                else:
-                    board_repr += str(self.board[i][j])
+                board_repr += self.board[i][j]
             board_repr += '\n'
         board_repr += '\n'
         return board_repr

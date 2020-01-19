@@ -25,8 +25,8 @@ class GUI:
         for key, name in GUI.img_name.items():
             self.img[key] = PhotoImage(file=GUI.res_path + name)
 
-        self.windowheight = self.board.height * self.img[0].height()
-        self.windowwidth = self.board.width * self.img[0].width()
+        self.windowheight = self.board.height * self.img[Board.EMPTY_SLOT].height()
+        self.windowwidth = self.board.width * self.img[Board.EMPTY_SLOT].width()
 
         self.window.geometry(str(self.windowwidth) + 'x' + str(self.windowheight+20) + '+100+100')
         self.window.resizable(True, True)
