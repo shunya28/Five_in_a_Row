@@ -57,11 +57,12 @@ class Board:
             self.print('Omok board is currently locked')
             return
         self.board = []
+        self.empty_slots = set()
         for i in range (self.height):
             self.board.append([])
             for j in range(self.width):
                 self.board[i].append(Board.EMPTY_SLOT)
-        self.empty_slots = self.width * self.height
+                self.empty_slots.add((i, j))
         self.traces = Traces()
         self.status = Board.INIT_STATUS
         self.clear_gui()
@@ -77,7 +78,7 @@ class Board:
             return Board.INVALID_CALL
 
         self.board[i][j] = Board.BLACK_SLOT if (self.status == Board.BLACK_TURN) else Board.WHITE_SLOT
-        self.empty_slots -= 1
+        self.empty_slots.remove((i, j))
         self.traces.push(self.board[i][j], i, j)
         self.print(self.traces.format_trace(self.traces.size(), self.traces.peek()))
 
@@ -88,7 +89,7 @@ class Board:
             elif self.status == Board.WHITE_TURN:
                 self.print('Game over: white wins!')
                 self.status = Board.WHITE_WIN
-        elif self.empty_slots == 0:
+        elif len(self.empty_slots) == 0:
             self.print('Game over: draw!')
             self.status = Board.DRAW
         else:
