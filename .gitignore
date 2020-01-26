@@ -4,6 +4,9 @@
 # Python
 __pycache__
 
-# Videos
+# VS Code
+.vscode
+
+# Media
 *.mov
 *.mp4
