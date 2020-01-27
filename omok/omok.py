@@ -7,8 +7,8 @@ def run():
     boardheight = 20
     board = Board(width=boardwidth, height=boardheight)
     ai = AI(board)
-    ai.load(board.WHITE_TURN)
-    # ai.load(board.BLACK_TURN)
+    ai.load(board.WHITE_TURN, 'minmax')
+    # ai.load(board.BLACK_TURN, 'minmax')
     ai.start()
     GUI(board)
     ai.stop()
