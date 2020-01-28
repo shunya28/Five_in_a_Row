@@ -10,3 +10,6 @@ __pycache__
 # Media
 *.mov
 *.mp4
+
+# Test
+test.py
