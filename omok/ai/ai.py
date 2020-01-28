@@ -45,7 +45,7 @@ class AI:
                 self.board.lock.acquire()
                 (i, j) = algorithm.decide_next_move(self.board, status_condition)
                 self.board.lock.release()
-                self.board.print('AI - ', end='')
+                self.board.print('AI({}) - '.format(ai_type), end='')
                 self.board.place(i, j)
             else:
                 sleep(0.1)
