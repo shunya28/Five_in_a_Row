@@ -11,4 +11,4 @@ You can start playing with the following command:
 python3 run.py
 ```
 
-To play against a another person, or make AI fight against itself, modify omok.py in omok folder.
+To play against another person, or make AI fight against itself, modify omok.py in omok folder.
