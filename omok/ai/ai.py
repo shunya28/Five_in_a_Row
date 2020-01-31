@@ -43,7 +43,7 @@ class AI:
         while not self.exit_flag:
             if self.board.status == status_condition:
                 self.board.lock.acquire()
-                (i, j) = algorithm.decide_next_move(self.board, status_condition)
+                (i, j) = algorithm.decide_next_move(self.board)
                 self.board.lock.release()
                 self.board.print('AI({}) - '.format(ai_type), end='')
                 self.board.place(i, j)

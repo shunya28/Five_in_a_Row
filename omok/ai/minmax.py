@@ -68,9 +68,11 @@ class MinMax:
                 value *= 13**(count - 3)
             self.criteria[pattern] = value
 
-    def decide_next_move(self, board_instance, condition):
+    def decide_next_move(self, board_instance):
         board = board_instance.board
         empty_slots = board_instance.empty_slots
+        condition = board_instance.status
+        
         padded_board = MinMax.pad(board)
         padded_empty_slots = set()
 
