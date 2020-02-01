@@ -75,6 +75,6 @@ def run_training(filename, total_epochs, learning_rate, decay, opponent, train_g
         if (i + 1) % 50 == 0:
             model_num = (i + 1) // 50
             print('Saving model {}...'.format(model_num))
-            trainee.save_model('{}iteration {}.npy'.format(trainee.MODEL_DIR, model_num))
+            trainee.save_model('{}train_backup/iteration {}.npy'.format(trainee.MODEL_DIR, model_num))
     
     print('Training complete')
