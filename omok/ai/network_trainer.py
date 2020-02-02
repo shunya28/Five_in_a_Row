@@ -72,7 +72,7 @@ def run_training(filename, total_epochs, learning_rate, decay, opponent, train_g
         trainee.feed_backward(full_gradients_sum, learning_rate)
         train_ground.reset()
 
-        if (i + 1) % 50 == 0:
+        if (i + 1) % 100 == 0:
             model_num = (i + 1) // 50
             print('Saving model {}...'.format(model_num))
             trainee.save_model('{}train_backup/iteration {}.npy'.format(trainee.MODEL_DIR, model_num))
