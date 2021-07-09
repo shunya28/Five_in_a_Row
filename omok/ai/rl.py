@@ -2,15 +2,17 @@ import tensorflow as tf
 import numpy as np
 
 class RL():
-    def __init__(self):
-        self.model = RL.create_model()
+    def __init__(self, board_height, board_width):
+        self.board_height = board_height
+        self.board_width = board_width
+        self.model = RL.create_model(board_height, board_width)
 
     @staticmethod 
-    def create_model():
+    def create_model(board_height, board_width):
         model = tf.keras.models.Sequential([
             tf.keras.layers.Conv2D(filters=32, kernel_size=5, strides=1),
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(units=32*20, activation=None)
+            tf.keras.layers.Dense(units=board_height*board_width, activation=None)
         ])
         return model
 
@@ -38,5 +40,5 @@ class RL():
         observation = board_instance.board
         preprocessed_observation = self.preprocess_observation(observation)
         action = self.forward_pass(preprocessed_observation)
-        action = int(action // 32), int(action % 32)
+        action = int(action // self.board_width), int(action % self.board_width)
         return action
