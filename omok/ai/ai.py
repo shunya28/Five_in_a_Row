@@ -2,6 +2,7 @@ from threading import Thread
 from time import sleep
 from omok.ai.minmax import MinMax
 from omok.ai.network import Network
+from omok.ai.rl import RL
 from omok.core.board import Board
 
 class AI:
@@ -19,8 +20,8 @@ class AI:
             self.board.print('Invalid status condition for AI')
         elif len(self.threads) == 1 and status_condition == self.threads[0][1]:
             self.board.print('Cannot create duplicate AI threads with the same status condition')
-        elif ai_type != 'minmax' and ai_type != 'network':
-            self.board.print('Invalid AI type; must be either "minmax" or "network"')
+        elif ai_type != 'minmax' and ai_type != 'network' and ai_type != 'rl':
+            self.board.print('Invalid AI type; must be either "minmax" or "network" or "rl"')
         else:
             self.threads.append((Thread(target=lambda : self.play(status_condition, ai_type)), status_condition))
             self.board.print('Omok AI loaded with condition ' + str(status_condition))
@@ -38,7 +39,12 @@ class AI:
         self.board.print('Omok AI stopped')
 
     def play(self, status_condition, ai_type):
-        algorithm = MinMax() if ai_type == 'minmax' else Network()
+        if ai_type == 'minmax':
+            algorithm = MinMax()
+        elif ai_type == 'network':
+            algorithm = Network('omok/ai/models_network/standard.npy')
+        else:
+            algorithm = RL()
         sleep(2.0) # To prevent it from starting before GUI loads up
         while not self.exit_flag:
             if self.board.status == status_condition:
