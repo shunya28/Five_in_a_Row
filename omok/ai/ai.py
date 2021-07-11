@@ -44,7 +44,7 @@ class AI:
         elif ai_type == 'network':
             algorithm = Network('omok/ai/models_network/standard.npy')
         else:
-            algorithm = RL(self.board.height, self.board.width)
+            algorithm = RL(self.board.height, self.board.width, status_condition)
         sleep(2.0) # To prevent it from starting before GUI loads up
         while not self.exit_flag:
             if self.board.status == status_condition:
