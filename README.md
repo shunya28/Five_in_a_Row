@@ -12,3 +12,6 @@ python3 run.py
 ```
 
 To play against another person, or make AI fight against itself, modify omok.py in omok folder.
+
+## Web Version
+JavaScript version of the game engine is available in the directory `web_release/` and it is live here (https://stuartsul.github.io/Five_in_a_Row/) without support for artificial intelligence.
