@@ -5,7 +5,7 @@ AI and the web versionhas not been implemented yet.
 
 how to play: run `python run.py`
 
-![Gameplay Example](https://raw.githubusercontent.com/shunya28/quantum-gomoku/master/sample/sample.png)
+![Gameplay Example](https://raw.githubusercontent.com/shunya28/quantum-gomoku/master/sample/samlpe.png)
 
 <!--
 # Five in a Row (Omok; Gomoku)
