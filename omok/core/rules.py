@@ -9,7 +9,7 @@ class Rules:
     @staticmethod
     def is_defeat(board, i, j):
         for direction in Rules.DIRECTIONS.values():
-            if Rules.count(board, i, j, direction) == 5:
+            if Rules.count(board, i, j, direction) >= 5:
                 return True
         return False
 
@@ -20,6 +20,9 @@ class Rules:
 
     @staticmethod
     def count(board, i, j, direction):
+        if board[i][j] == '-':
+            return 0
+
         total = 1
         height = len(board)
         width = len(board[0])
@@ -36,3 +39,43 @@ class Rules:
                     break
 
         return total
+
+    @staticmethod
+    def can_use_strong_stone(b):
+        """check if current player can use strong stone
+
+        b is an instance of Board class
+        """
+
+        if b.status == b.BLACK_TURN:
+            if b.prev_black_stone_status is None:
+                return True
+            if b.prev_black_stone_status == b.STONE_BLACK70:
+                return True
+        elif b.status == b.WHITE_TURN:
+            if b.prev_white_stone_status is None:
+                return True
+            if b.prev_white_stone_status == b.STONE_WHITE30:
+                return True
+
+        return False
+
+    @staticmethod
+    def can_use_measurement(b):
+        """check if current player can use measurement
+
+        b is an instance of Board class
+        """
+
+        if b.status == b.BLACK_MEASURE:
+            if b.prev_black_stone_status is None:
+                return True
+            if b.prev_black_stone_status == b.STONE_BLACK70:
+                return True
+        elif b.status == b.WHITE_MEASURE:
+            if b.prev_white_stone_status is None:
+                return True
+            if b.prev_white_stone_status == b.STONE_WHITE30:
+                return True
+
+        return False
