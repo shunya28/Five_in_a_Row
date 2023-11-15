@@ -3,7 +3,8 @@
 This is a game of Quantum Gomoku (Quantum Five in a Row / Quantum Omok) developed in Python 3.11.
 AI and the web versionhas not been implemented yet.
 
-how to play: run `python run.py`
+- reference: [【理解不能】何色になるか分からない量子で五目並べやってみた【でも楽しそう】 - YouTube](https://www.youtube.com/watch?v=mitAxA3f4U4&t=17s&ab_channel=QuizKnock)
+- how to play: run `python run.py`
 
 ![Gameplay Example](https://raw.githubusercontent.com/shunya28/quantum-gomoku/master/sample/samlpe.png)
 
