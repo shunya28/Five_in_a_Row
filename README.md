@@ -5,8 +5,7 @@ AI and the web versionhas not been implemented yet.
 
 how to play: run `python run.py`
 
----
-
+<!--
 # Five in a Row (Omok; Gomoku)
 
 ![Gameplay Example](https://raw.githubusercontent.com/StuartSul/Five_in_a_Row/master/sample/MainScreen.png)
@@ -23,3 +22,4 @@ To play against another person, or make AI fight against itself, modify omok.py 
 
 ## Web Version
 JavaScript version of the game engine is available in the directory `web_release/` and it is live here (https://stuartsul.github.io/Five_in_a_Row/) without support for artificial intelligence.
+-->
