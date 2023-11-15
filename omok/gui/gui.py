@@ -25,7 +25,7 @@ class GUI:
                 Board.WHITE10_SLOT: 'white10.gif',
                 Board.WHITE30_SLOT: 'white30.gif'}
 
-    def __init__(self, board, windowtitle='Omok'):
+    def __init__(self, board, windowtitle='Quantum Gomoku'):
         self.board = board
         self.board.lock.acquire()
         
@@ -57,7 +57,7 @@ class GUI:
         self.changestonestatusbutton = Button(self.labelframe, text='Change Stone', command=self.board.change_stone_status)
         self.changestonestatusbutton.pack(side='right', fill='y')
 
-        measurement_label_text = 'Remaining measurement: Black ' + str(self.board.MAX_MEASUREMENT) + ' / White ' + str(self.board.MAX_MEASUREMENT)
+        measurement_label_text = 'Measurement remaining: Black ' + str(self.board.MAX_MEASUREMENT) + ' / White ' + str(self.board.MAX_MEASUREMENT)
         self.measurementlabel = Label(self.labelframe, text=measurement_label_text, height=1, width=35)
         self.measurementlabel.pack(side='right', fill='y')
 
@@ -94,7 +94,7 @@ class GUI:
 
         black_remaining_measurement = self.board.MAX_MEASUREMENT - self.board.n_black_measurement
         white_remaining_measurement = self.board.MAX_MEASUREMENT - self.board.n_white_measurement
-        self.measurementlabel['text'] = 'Remaining measurement: Black ' + str(black_remaining_measurement) + ' / White ' + str(white_remaining_measurement)
+        self.measurementlabel['text'] = 'Measurement remaining: Black ' + str(black_remaining_measurement) + ' / White ' + str(white_remaining_measurement)
 
         # NOTE: be careful that the status will be WHITE_MEASURED when BLACK_TURN, and vice versa
         if (black_remaining_measurement <= 0 and self.board.status == Board.WHITE_TURN) \
