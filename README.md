@@ -1,3 +1,8 @@
+# Quantum Gomoku
+
+This is a game of Quantum Gomoku (Quantum Five in a Row / Quantum Omok) developed in Python 3.11.
+
+---
 
 # Five in a Row (Omok; Gomoku)
 
