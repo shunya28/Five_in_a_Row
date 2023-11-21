@@ -50,12 +50,12 @@ class Rules:
         if b.status == b.BLACK_TURN:
             if b.prev_black_stone_status is None:
                 return True
-            if b.prev_black_stone_status == b.STONE_BLACK70:
+            if b.prev_black_stone_status == b.BLACK70_SLOT:
                 return True
         elif b.status == b.WHITE_TURN:
             if b.prev_white_stone_status is None:
                 return True
-            if b.prev_white_stone_status == b.STONE_WHITE30:
+            if b.prev_white_stone_status == b.WHITE30_SLOT:
                 return True
 
         return False
@@ -70,12 +70,12 @@ class Rules:
         if b.status == b.BLACK_MEASURE:
             if b.prev_black_stone_status is None:
                 return True
-            if b.prev_black_stone_status == b.STONE_BLACK70:
+            if b.prev_black_stone_status == b.BLACK70_SLOT:
                 return True
         elif b.status == b.WHITE_MEASURE:
             if b.prev_white_stone_status is None:
                 return True
-            if b.prev_white_stone_status == b.STONE_WHITE30:
+            if b.prev_white_stone_status == b.WHITE30_SLOT:
                 return True
 
         return False

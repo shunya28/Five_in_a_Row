@@ -12,10 +12,10 @@ class GUI:
                    Board.WHITE_WIN: 'White wins!',
                    Board.WHITE_MEASURED: "White measured",
                    Board.DRAW: 'Draw!'}
-    stone_status_text = {Board.STONE_BLACK90: "Stone: 90",
-                         Board.STONE_BLACK70: "Stone: 70",
-                         Board.STONE_WHITE30: "Stone: 30",
-                         Board.STONE_WHITE10: "Stone: 10"}
+    stone_status_text = {Board.BLACK90_SLOT: "Stone: 90",
+                         Board.BLACK70_SLOT: "Stone: 70",
+                         Board.WHITE30_SLOT: "Stone: 30",
+                         Board.WHITE10_SLOT: "Stone: 10"}
     res_path = 'omok/res/'
     img_name = {Board.EMPTY_SLOT: 'empty.gif',
                 Board.BLACK_SLOT: 'black.gif',

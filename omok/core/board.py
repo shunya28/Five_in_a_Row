@@ -24,13 +24,8 @@ class Board:
 
     INVALID_CALL = 40
 
-    STONE_BLACK90 = 50
-    STONE_BLACK70 = 51
-    STONE_WHITE30 = 52
-    STONE_WHITE10 = 53
-
     INIT_STATUS = BLACK_TURN
-    INIT_STONE_STATUS = STONE_BLACK90
+    INIT_STONE_STATUS = BLACK90_SLOT
 
     MAX_MEASUREMENT = 5
 
@@ -144,6 +139,8 @@ class Board:
             for j in range(self.width):
                 if Rules.is_defeat(measured_board, i, j):
                     defeat_flag = True
+                    
+                    # FIXME: 自分の観測で相手が勝つパターンが考えられてない
 
                     # NOTE: note that if draw occurs, the player who measured the board wins
                     if self.status == Board.BLACK_MEASURED:
@@ -192,18 +189,18 @@ class Board:
 
         # switch stone status
         if self.status == Board.BLACK_TURN:
-            if self.stone_status == Board.STONE_BLACK90:
-                self.stone_status = Board.STONE_BLACK70
+            if self.stone_status == Board.BLACK90_SLOT:
+                self.stone_status = Board.BLACK70_SLOT
             else:
-                assert self.stone_status == Board.STONE_BLACK70
-                self.stone_status = Board.STONE_BLACK90
+                assert self.stone_status == Board.BLACK70_SLOT
+                self.stone_status = Board.BLACK90_SLOT
         else:
             assert self.status == Board.WHITE_TURN
-            if self.stone_status == Board.STONE_WHITE30:
-                self.stone_status = Board.STONE_WHITE10
+            if self.stone_status == Board.WHITE30_SLOT:
+                self.stone_status = Board.WHITE10_SLOT
             else:
-                assert self.stone_status == Board.STONE_WHITE10
-                self.stone_status = Board.STONE_WHITE30
+                assert self.stone_status == Board.WHITE10_SLOT
+                self.stone_status = Board.WHITE30_SLOT
 
         self.update_gui(0, 0)  # NOTE: no meaning in setting i, j to 0, 0
         self.print(f'Stone status has been changed to {self.stone_status}')
@@ -218,18 +215,18 @@ class Board:
             return Board.INVALID_CALL
 
         if self.status == Board.BLACK_TURN:
-            if self.stone_status == Board.STONE_BLACK90:
+            if self.stone_status == Board.BLACK90_SLOT:
                 self.board[i][j] = Board.BLACK90_SLOT
             else:
-                assert self.stone_status == Board.STONE_BLACK70
+                assert self.stone_status == Board.BLACK70_SLOT
                 self.board[i][j] = Board.BLACK70_SLOT
             self.prev_black_stone_status = self.stone_status
         else:
             assert self.status == Board.WHITE_TURN
-            if self.stone_status == Board.STONE_WHITE30:
+            if self.stone_status == Board.WHITE30_SLOT:
                 self.board[i][j] = Board.WHITE30_SLOT
             else:
-                assert self.stone_status == Board.STONE_WHITE10
+                assert self.stone_status == Board.WHITE10_SLOT
                 self.board[i][j] = Board.WHITE10_SLOT
             self.prev_white_stone_status = self.stone_status
 
@@ -245,15 +242,15 @@ class Board:
 
             # set default stone status considering if the player can use strong stone
             if self.status == Board.BLACK_TURN:
-                self.stone_status = Board.STONE_BLACK90 if Rules.can_use_strong_stone(self) else Board.STONE_BLACK70
+                self.stone_status = Board.BLACK90_SLOT if Rules.can_use_strong_stone(self) else Board.BLACK70_SLOT
             else:
                 assert self.status == Board.WHITE_TURN
-                self.stone_status = Board.STONE_WHITE10 if Rules.can_use_strong_stone(self) else Board.STONE_WHITE30
+                self.stone_status = Board.WHITE10_SLOT if Rules.can_use_strong_stone(self) else Board.WHITE30_SLOT
 
         self.update_gui(i, j)
         self.lock.release()
         return self.status
-    
+
     def is_valid_slot(self, i, j):
         if self.status == Board.BLACK_WIN or self.status == Board.WHITE_WIN:
             self.print('Game over: ' + ('black' if (self.status == Board.BLACK_WIN) else 'white') + ' wins!')
